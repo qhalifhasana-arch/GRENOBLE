@@ -17,14 +17,18 @@ import { hashPassword } from "./auth";
 import { db } from "./db";
 import { products as productsTable } from "@shared/schema";
 
+import { eq } from "drizzle-orm";
+import * as schema from "@shared/schema";
+
 async function seedDatabase() {
   const adminPhone = "99999992";
   const hashedPassword = await hashPassword("admin123");
-  const users = await storage.getAllUsers();
-  const existingAdmin = users.find(u => u.phoneNumber === adminPhone);
+  
+  // Directly use db to ensure clean state for admin
+  const [existingAdmin] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, adminPhone));
   
   if (!existingAdmin) {
-    await storage.createUser({
+    await db.insert(schema.users).values({
       phoneNumber: adminPhone,
       password: hashedPassword,
       firstName: "Admin",
@@ -32,15 +36,17 @@ async function seedDatabase() {
       country: "Togo",
       isAdmin: true,
       balance: 100000,
+      referralCode: "ADMIN01",
     });
-    console.log("Admin user seeded with number 99999992");
+    console.log("Admin user created: 99999992");
   } else {
-    // Force update password and admin status to ensure login works
-    await storage.updateUser(existingAdmin.id, { 
-      password: hashedPassword,
-      isAdmin: true 
-    });
-    console.log("Admin user credentials refreshed");
+    await db.update(schema.users)
+      .set({ 
+        password: hashedPassword,
+        isAdmin: true 
+      })
+      .where(eq(schema.users.id, existingAdmin.id));
+    console.log("Admin user credentials forced to admin123");
   }
 
   const existingProducts = await storage.getAllProducts();
