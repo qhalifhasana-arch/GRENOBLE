@@ -134,6 +134,16 @@ export const api = {
     },
   },
   admin: {
+    stats: {
+      method: 'GET' as const,
+      path: '/api/admin/stats',
+      responses: {
+        200: z.object({
+          registrationsToday: z.number(),
+          depositsToday: z.number(),
+        }),
+      },
+    },
     users: {
       method: 'GET' as const,
       path: '/api/admin/users',

@@ -1,6 +1,6 @@
 import { users, products, investments, transactions, settings, type User, type InsertUser, type Product, type Investment, type Transaction, type Setting } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User
@@ -31,6 +31,7 @@ export interface IStorage {
   updateSetting(key: string, value: string): Promise<Setting>;
   
   // Stats
+  getAdminStats(): Promise<{ registrationsToday: number; depositsToday: number }>;
   getUserStats(userId: number): Promise<any>;
 }
 
@@ -121,6 +122,24 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({ target: settings.key, set: { value } })
       .returning();
     return setting;
+  }
+
+  async getAdminStats(): Promise<{ registrationsToday: number; depositsToday: number }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const usersToday = await db.select().from(users).where(sql`${users.createdAt} >= ${today}`);
+    const depositsToday = await db.select().from(transactions).where(
+      and(
+        eq(transactions.type, "deposit"),
+        sql`${transactions.createdAt} >= ${today}`
+      )
+    );
+
+    return {
+      registrationsToday: usersToday.length,
+      depositsToday: depositsToday.length
+    };
   }
 
   async getUserStats(userId: number): Promise<any> {

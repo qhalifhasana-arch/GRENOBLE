@@ -162,6 +162,11 @@ export async function registerRoutes(
   });
 
   // Admin
+  app.get(api.admin.stats.path, isAdmin, async (req, res) => {
+    const stats = await storage.getAdminStats();
+    res.json(stats);
+  });
+
   app.get(api.admin.users.path, isAdmin, async (req, res) => {
     const users = await storage.getAllUsers();
     res.json(users);
