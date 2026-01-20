@@ -8,8 +8,6 @@ export function BottomNav() {
   const navItems = [
     { icon: Home, label: "Accueil", href: "/dashboard" },
     { icon: Sprout, label: "Produits", href: "/products" },
-    { icon: Wallet, label: "Dépôt", href: "/deposit" },
-    { icon: ArrowDownUp, label: "Retrait", href: "/withdraw" },
     { icon: Users, label: "Équipe", href: "/team" },
     { icon: User, label: "Compte", href: "/account" },
   ];

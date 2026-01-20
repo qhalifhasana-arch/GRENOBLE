@@ -26,17 +26,17 @@ export default function Dashboard() {
         
         <div className="flex flex-col items-center">
           <p className="text-green-100 text-sm mb-1">Solde Total</p>
-          <h2 className="text-4xl font-bold text-white tracking-tight mb-4 font-display">
+          <h2 className="text-4xl font-bold text-white tracking-tight mb-6 font-display">
             {user?.balance?.toLocaleString()} FCFA
           </h2>
-          <div className="flex gap-3 w-full max-w-xs">
+          <div className="grid grid-cols-2 gap-4 w-full">
             <Link href="/deposit" className="w-full">
-              <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold rounded-xl">
+              <Button className="w-full h-16 bg-white text-primary hover:bg-white/90 font-bold rounded-2xl text-lg shadow-lg">
                 Dépôt
               </Button>
             </Link>
             <Link href="/withdraw" className="w-full">
-               <Button className="w-full bg-white/20 text-white hover:bg-white/30 border-0 font-semibold rounded-xl backdrop-blur-md">
+               <Button className="w-full h-16 bg-amber-400 text-amber-950 hover:bg-amber-500 border-0 font-bold rounded-2xl text-lg shadow-lg">
                 Retrait
               </Button>
             </Link>
