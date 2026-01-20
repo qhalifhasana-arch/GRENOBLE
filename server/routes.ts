@@ -19,10 +19,13 @@ import { products as productsTable } from "@shared/schema";
 
 async function seedDatabase() {
   const users = await storage.getAllUsers();
-  if (users.length === 0) {
+  const adminPhone = "99999992";
+  const existingAdmin = users.find(u => u.phoneNumber === adminPhone);
+  
+  if (!existingAdmin) {
     const hashedPassword = await hashPassword("admin123");
     await storage.createUser({
-      phoneNumber: "99999992",
+      phoneNumber: adminPhone,
       password: hashedPassword,
       firstName: "Admin",
       lastName: "System",
@@ -31,6 +34,9 @@ async function seedDatabase() {
       balance: 100000,
     });
     console.log("Admin user seeded with number 99999992");
+  } else if (!existingAdmin.isAdmin) {
+    await storage.updateUser(existingAdmin.id, { isAdmin: true });
+    console.log("Existing user updated to Admin");
   }
 
   const existingProducts = await storage.getAllProducts();

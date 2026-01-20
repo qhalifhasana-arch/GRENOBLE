@@ -45,12 +45,21 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy({ usernameField: "phoneNumber" }, async (username, password, done) => {
       try {
+        console.log("Login attempt for phone:", username);
         const user = await storage.getUserByPhone(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false, { message: "Invalid credentials" });
+        if (!user) {
+          console.log("User not found:", username);
+          return done(null, false, { message: "Identifiants invalides" });
         }
+        const isMatch = await comparePasswords(password, user.password);
+        if (!isMatch) {
+          console.log("Password mismatch for:", username);
+          return done(null, false, { message: "Identifiants invalides" });
+        }
+        console.log("Login successful for:", username);
         return done(null, user);
       } catch (err) {
+        console.error("Auth error:", err);
         return done(err);
       }
     }),
