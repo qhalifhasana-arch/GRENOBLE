@@ -13,9 +13,10 @@ import Deposit from "@/pages/Deposit";
 import Withdraw from "@/pages/Withdraw";
 import Team from "@/pages/Team";
 import Account from "@/pages/Account";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType, adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -29,6 +30,11 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
   if (!user) {
     setLocation("/login");
+    return null;
+  }
+
+  if (adminOnly && !user.isAdmin) {
+    setLocation("/dashboard");
     return null;
   }
 
@@ -57,6 +63,9 @@ function Router() {
       </Route>
       <Route path="/account">
         <ProtectedRoute component={Account} />
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute component={Admin} adminOnly />
       </Route>
       <Route component={NotFound} />
     </Switch>

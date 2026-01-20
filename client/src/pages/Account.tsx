@@ -53,9 +53,11 @@ export default function Account() {
         </Card>
 
         {user?.isAdmin && (
-           <Button variant="outline" className="w-full bg-black text-white hover:bg-gray-800 h-12 rounded-xl">
-              Accéder au Panel Admin
-           </Button>
+           <Link href="/admin">
+             <Button variant="outline" className="w-full bg-black text-white hover:bg-gray-800 h-12 rounded-xl">
+                Accéder au Panel Admin
+             </Button>
+           </Link>
         )}
 
         <Button 
