@@ -22,7 +22,7 @@ async function seedDatabase() {
   if (users.length === 0) {
     const hashedPassword = await hashPassword("admin123");
     await storage.createUser({
-      phoneNumber: "99999999",
+      phoneNumber: "99999992",
       password: hashedPassword,
       firstName: "Admin",
       lastName: "System",
@@ -30,7 +30,7 @@ async function seedDatabase() {
       isAdmin: true,
       balance: 100000,
     });
-    console.log("Admin user seeded");
+    console.log("Admin user seeded with number 99999992");
   }
 
   const existingProducts = await storage.getAllProducts();
