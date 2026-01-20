@@ -82,16 +82,19 @@ export async function registerRoutes(
 
   app.post(api.products.invest.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    const { productId } = req.body;
+    const { productId, userId, bypassBalance } = req.body;
     
-    const user = await storage.getUser(req.user!.id);
+    const targetUserId = userId || req.user!.id;
+    const user = await storage.getUser(targetUserId);
     const product = await storage.getProduct(productId);
     
     if (!product) return res.status(404).send("Product not found");
-    if (user!.balance < product.price) return res.status(400).send("Insufficient balance");
-
-    // Deduct balance
-    await storage.updateUser(user!.id, { balance: user!.balance - product.price });
+    
+    // Admin bypass for manual VIP assignment
+    if (!bypassBalance || !req.user!.isAdmin) {
+      if (user!.balance < product.price) return res.status(400).send("Insufficient balance");
+      await storage.updateUser(user!.id, { balance: user!.balance - product.price });
+    }
     
     // Create investment
     const investment = await storage.createInvestment(user!.id, productId);

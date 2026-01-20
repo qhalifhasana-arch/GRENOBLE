@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Transaction, Setting } from "@shared/schema";
+import { User, Transaction, Setting, Product } from "@shared/schema";
 import { api } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { 
@@ -21,13 +21,44 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, XCircle, Ban, Unlock, ShieldCheck, UserPlus, Wallet } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  Loader2, 
+  CheckCircle, 
+  XCircle, 
+  Ban, 
+  Unlock, 
+  ShieldCheck, 
+  UserPlus, 
+  Wallet, 
+  Search,
+  Plus,
+  Shield,
+  Link as LinkIcon
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { useState, useMemo } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Admin() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
+  const [searchPhone, setSearchPhone] = useState("");
 
   const { data: adminStats } = useQuery<{ registrationsToday: number; depositsToday: number }>({
     queryKey: [api.admin.stats.path],
@@ -39,6 +70,14 @@ export default function Admin() {
 
   const { data: transactions, isLoading: loadingTransactions } = useQuery<Transaction[]>({
     queryKey: [api.admin.transactions.path],
+  });
+
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
+  const { data: settings } = useQuery<Setting[]>({
+    queryKey: [api.admin.settings.path],
   });
 
   const updateTransactionMutation = useMutation({
@@ -74,6 +113,43 @@ export default function Admin() {
       toast({ title: "Utilisateur mis à jour" });
     },
   });
+
+  const addInvestmentMutation = useMutation({
+    mutationFn: async ({ userId, productId }: { userId: number; productId: number }) => {
+      const res = await fetch(`/api/invest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, productId, bypassBalance: true }), // Backend needs to handle this
+      });
+      if (!res.ok) throw new Error("Failed to add investment");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Produit VIP ajouté avec succès" });
+    },
+  });
+
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const res = await fetch(`/api/admin/settings/${key}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value }),
+      });
+      if (!res.ok) throw new Error("Failed to update setting");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.admin.settings.path] });
+      toast({ title: "Paramètre mis à jour" });
+    },
+  });
+
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    if (!searchPhone) return users;
+    return users.filter(u => u.phoneNumber.includes(searchPhone));
+  }, [users, searchPhone]);
 
   if (loadingUsers || loadingTransactions) {
     return (
@@ -131,10 +207,11 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="deposits" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mb-8">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[750px] mb-8">
             <TabsTrigger value="deposits">Dépôts ({pendingDeposits.length})</TabsTrigger>
             <TabsTrigger value="withdrawals">Retraits ({pendingWithdrawals.length})</TabsTrigger>
             <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+            <TabsTrigger value="settings">Réglages</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
           </TabsList>
 
@@ -169,60 +246,111 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="users">
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Rechercher par numéro de téléphone..." 
+                  className="pl-10"
+                  value={searchPhone}
+                  onChange={(e) => setSearchPhone(e.target.value)}
+                />
+              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Liste des Utilisateurs</CardTitle>
+                  <CardDescription>Gérez les comptes et les permissions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom</TableHead>
+                        <TableHead>Téléphone</TableHead>
+                        <TableHead>Solde</TableHead>
+                        <TableHead>Rôle</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell>{u.firstName} {u.lastName}</TableCell>
+                          <TableCell>{u.phoneNumber}</TableCell>
+                          <TableCell>
+                            <BalanceEdit user={u} onUpdate={(balance) => updateUserMutation.mutate({ id: u.id, updates: { balance } })} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {u.isAdmin ? <Badge className="bg-purple-100 text-purple-700">Admin</Badge> : <Badge variant="outline">Utilisateur</Badge>}
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 w-6 p-0"
+                                onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isAdmin: !u.isAdmin } })}
+                                title={u.isAdmin ? "Retirer admin" : "Nommer admin"}
+                              >
+                                <Shield className={`h-3 w-3 ${u.isAdmin ? 'text-purple-600' : 'text-gray-400'}`} />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {u.isBanned ? <Badge variant="destructive">Banni</Badge> : <Badge className="bg-green-100 text-green-700">Actif</Badge>}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 px-2"
+                                onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isBanned: !u.isBanned } })}
+                                title={u.isBanned ? "Débannir" : "Bannir"}
+                              >
+                                {u.isBanned ? <Unlock className="w-4 h-4" /> : <Ban className="w-4 h-4 text-red-500" />}
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 px-2"
+                                onClick={() => updateUserMutation.mutate({ id: u.id, updates: { withdrawalBlocked: !u.withdrawalBlocked } })}
+                                title={u.withdrawalBlocked ? "Débloquer Retraits" : "Bloquer Retraits"}
+                              >
+                                <ShieldCheck className={`w-4 h-4 ${u.withdrawalBlocked ? 'text-red-500' : 'text-green-500'}`} />
+                              </Button>
+                              <AddVIPDialog products={products || []} onAdd={(productId) => addInvestmentMutation.mutate({ userId: u.id, productId })} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
             <Card>
               <CardHeader>
-                <CardTitle>Liste des Utilisateurs</CardTitle>
-                <CardDescription>Gérez les comptes et les permissions</CardDescription>
+                <CardTitle>Configuration de la plateforme</CardTitle>
+                <CardDescription>Modifiez les liens et paramètres globaux</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nom</TableHead>
-                      <TableHead>Téléphone</TableHead>
-                      <TableHead>Solde</TableHead>
-                      <TableHead>Rôle</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users?.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell>{u.firstName} {u.lastName}</TableCell>
-                        <TableCell>{u.phoneNumber}</TableCell>
-                        <TableCell>{u.balance.toLocaleString()} FCFA</TableCell>
-                        <TableCell>
-                          {u.isAdmin ? <Badge className="bg-purple-100 text-purple-700">Admin</Badge> : 'Utilisateur'}
-                        </TableCell>
-                        <TableCell>
-                          {u.isBanned ? <Badge variant="destructive">Banni</Badge> : <Badge className="bg-green-100 text-green-700">Actif</Badge>}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-8 px-2"
-                              onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isBanned: !u.isBanned } })}
-                            >
-                              {u.isBanned ? <Unlock className="w-4 h-4" /> : <Ban className="w-4 h-4 text-red-500" />}
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-8 px-2"
-                              onClick={() => updateUserMutation.mutate({ id: u.id, updates: { withdrawalBlocked: !u.withdrawalBlocked } })}
-                              title={u.withdrawalBlocked ? "Débloquer Retraits" : "Bloquer Retraits"}
-                            >
-                              <ShieldCheck className={`w-4 h-4 ${u.withdrawalBlocked ? 'text-red-500' : 'text-green-500'}`} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <FormLabel>Lien de Paiement (Dépôt)</FormLabel>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="https://..." 
+                      defaultValue={settings?.find(s => s.key === 'payment_link')?.value}
+                      onBlur={(e) => updateSettingMutation.mutate({ key: 'payment_link', value: e.target.value })}
+                    />
+                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                      <LinkIcon className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+                {/* Add more settings as needed */}
               </CardContent>
             </Card>
           </TabsContent>
@@ -241,6 +369,54 @@ export default function Admin() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+function BalanceEdit({ user, onUpdate }: { user: User, onUpdate: (balance: number) => void }) {
+  const [val, setVal] = useState(user.balance.toString());
+  return (
+    <div className="flex items-center gap-2">
+      <Input 
+        className="w-24 h-8 text-xs font-bold" 
+        value={val} 
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={() => onUpdate(parseInt(val) || 0)}
+      />
+      <span className="text-[10px] text-muted-foreground">FCFA</span>
+    </div>
+  );
+}
+
+function AddVIPDialog({ products, onAdd }: { products: Product[], onAdd: (id: number) => void }) {
+  const [selected, setSelected] = useState("");
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="h-8 px-2" title="Ajouter VIP">
+          <Plus className="w-4 h-4 text-green-600" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Ajouter un produit VIP</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
+          <Select onValueChange={setSelected}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choisir un produit" />
+            </SelectTrigger>
+            <SelectContent>
+              {products.map(p => (
+                <SelectItem key={p.id} value={p.id.toString()}>{p.name} ({p.price} FCFA)</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => selected && onAdd(parseInt(selected))}>Confirmer l'ajout</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -318,4 +494,8 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
       </TableBody>
     </Table>
   );
+}
+
+function FormLabel({ children }: { children: React.ReactNode }) {
+  return <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{children}</label>;
 }
