@@ -54,15 +54,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      {/* Header with Login Button Top Left */}
-      <div className="absolute top-4 left-4">
-         <Link href="/login">
-            <Button variant="ghost" className="text-primary font-semibold hover:bg-primary/10">
-              Se connecter
-            </Button>
-         </Link>
-      </div>
-
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
            <div className="flex justify-center mb-4">
@@ -192,6 +183,15 @@ export default function Register() {
                 </Button>
               </form>
             </Form>
+
+            <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+              <p className="text-sm text-muted-foreground mb-4">Vous avez déjà un compte ?</p>
+              <Link href="/login">
+                <Button variant="outline" className="w-full rounded-xl py-6 border-primary text-primary font-bold hover:bg-primary/5">
+                  Se connecter
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
         
