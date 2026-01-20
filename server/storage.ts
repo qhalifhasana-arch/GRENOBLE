@@ -1,38 +1,133 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { users, products, investments, transactions, settings, type User, type InsertUser, type Product, type Investment, type Transaction, type Setting } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  // User
+  getUser(id: number): Promise<User | undefined>;
+  getUserByPhone(phoneNumber: string): Promise<User | undefined>;
+  getUserByReferralCode(code: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<User>): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+
+  // Products
+  getAllProducts(): Promise<Product[]>;
+  getProduct(id: number): Promise<Product | undefined>;
+  createInvestment(userId: number, productId: number): Promise<Investment>;
+  
+  // Transactions
+  createTransaction(transaction: Partial<Transaction>): Promise<Transaction>;
+  getTransactionsByUser(userId: number): Promise<Transaction[]>;
+  getAllTransactions(): Promise<Transaction[]>;
+  updateTransactionStatus(id: number, status: string): Promise<Transaction>;
+  
+  // Referrals
+  getReferrals(userId: number): Promise<User[]>;
+
+  // Settings
+  getSettings(): Promise<Setting[]>;
+  getSetting(key: string): Promise<Setting | undefined>;
+  updateSetting(key: string, value: string): Promise<Setting>;
+  
+  // Stats
+  getUserStats(userId: number): Promise<any>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUserByPhone(phoneNumber: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.phoneNumber, phoneNumber));
+    return user;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getUserByReferralCode(code: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.referralCode, code));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    // Generate unique referral code if not provided (simple logic)
+    const referralCode = `GRN${Math.floor(100000 + Math.random() * 900000)}`;
+    const [user] = await db.insert(users).values({ ...insertUser, referralCode }).returning();
     return user;
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User> {
+    const [updatedUser] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return updatedUser;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getAllProducts(): Promise<Product[]> {
+    return await db.select().from(products).orderBy(products.price);
+  }
+
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
+  }
+
+  async createInvestment(userId: number, productId: number): Promise<Investment> {
+    const [investment] = await db.insert(investments).values({
+      userId,
+      productId,
+      status: "active"
+    }).returning();
+    return investment;
+  }
+
+  async createTransaction(transaction: Partial<Transaction>): Promise<Transaction> {
+    const [newTransaction] = await db.insert(transactions).values(transaction as any).returning();
+    return newTransaction;
+  }
+
+  async getTransactionsByUser(userId: number): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.userId, userId)).orderBy(desc(transactions.createdAt));
+  }
+
+  async getAllTransactions(): Promise<Transaction[]> {
+    return await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+  }
+
+  async updateTransactionStatus(id: number, status: string): Promise<Transaction> {
+    const [transaction] = await db.update(transactions).set({ status }).where(eq(transactions.id, id)).returning();
+    return transaction;
+  }
+
+  async getReferrals(userId: number): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.referrerId, userId));
+  }
+  
+  async getSettings(): Promise<Setting[]> {
+    return await db.select().from(settings);
+  }
+
+  async getSetting(key: string): Promise<Setting | undefined> {
+    const [setting] = await db.select().from(settings).where(eq(settings.key, key));
+    return setting;
+  }
+
+  async updateSetting(key: string, value: string): Promise<Setting> {
+    const [setting] = await db.insert(settings)
+      .values({ key, value })
+      .onConflictDoUpdate({ target: settings.key, set: { value } })
+      .returning();
+    return setting;
+  }
+
+  async getUserStats(userId: number): Promise<any> {
+    // Complex query to get referral stats would go here
+    // For now returning basic implementation
+    return {}; 
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
