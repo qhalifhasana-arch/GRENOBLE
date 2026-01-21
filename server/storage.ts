@@ -164,6 +164,60 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async processDailyEarnings(): Promise<void> {
+    const activeInvestments = await db.select({
+      investment: investments,
+      product: products
+    })
+    .from(investments)
+    .innerJoin(products, eq(investments.productId, products.id))
+    .where(eq(investments.status, "active"));
+
+    const now = new Date();
+
+    for (const item of activeInvestments) {
+      const { investment, product } = item;
+      const startDate = new Date(investment.startDate!);
+      const expiryDate = new Date(startDate.getTime() + product.duration * 24 * 60 * 60 * 1000);
+
+      if (now >= expiryDate) {
+        await db.update(investments)
+          .set({ status: "expired" })
+          .where(eq(investments.id, investment.id));
+        continue;
+      }
+
+      const lastCollection = new Date(investment.lastCollectionDate!);
+      const hoursSinceLast = (now.getTime() - lastCollection.getTime()) / (1000 * 60 * 60);
+
+      if (hoursSinceLast >= 24) {
+        const daysToCredit = Math.floor(hoursSinceLast / 24);
+        const totalEarning = product.dailyRate * daysToCredit;
+
+        await db.transaction(async (tx) => {
+          const [user] = await tx.select().from(users).where(eq(users.id, investment.userId));
+          if (user) {
+            await tx.update(users)
+              .set({ balance: user.balance + totalEarning })
+              .where(eq(users.id, user.id));
+
+            await tx.insert(transactions).values({
+              userId: user.id,
+              type: "daily_earning",
+              amount: totalEarning,
+              status: "completed",
+              method: `Earning from ${product.name}`,
+            });
+
+            await tx.update(investments)
+              .set({ lastCollectionDate: new Date(lastCollection.getTime() + daysToCredit * 24 * 60 * 60 * 1000) })
+              .where(eq(investments.id, investment.id));
+          }
+        });
+      }
+    }
+  }
+
   async getUserStats(userId: number): Promise<any> {
     // Complex query to get referral stats would go here
     // For now returning basic implementation

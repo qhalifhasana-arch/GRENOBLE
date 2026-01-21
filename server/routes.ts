@@ -194,6 +194,17 @@ export async function registerRoutes(
     res.json(stats);
   });
 
+  // Background task for daily earnings
+  setInterval(async () => {
+    try {
+      if ('processDailyEarnings' in storage) {
+        await (storage as any).processDailyEarnings();
+      }
+    } catch (error) {
+      console.error("Daily earnings processing failed:", error);
+    }
+  }, 10 * 60 * 1000); // Check every 10 minutes
+
   app.get(api.admin.users.path, isAdmin, async (req, res) => {
     const users = await storage.getAllUsers();
     res.json(users);

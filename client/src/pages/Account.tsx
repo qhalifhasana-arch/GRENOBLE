@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { 
   Dialog, 
   DialogContent, 
@@ -202,23 +203,38 @@ export default function Account() {
                       {investments?.map((inv) => {
                         const startDate = new Date(inv.startDate || Date.now());
                         const expiryDate = addDays(startDate, inv.product.duration);
+                        const isExpired = inv.status === 'expired' || new Date() > expiryDate;
+                        
                         return (
                           <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex flex-col">
                                 <span className="font-bold text-sm">{inv.product.name}</span>
-                                <span className="text-[10px] text-muted-foreground">Acquis le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
+                                <span className="text-[10px] text-muted-foreground">Activé le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
                               </div>
-                              <Badge className="bg-green-100 text-green-700 border-0 h-5 text-[9px] uppercase tracking-wider font-bold">Actif</Badge>
+                              <Badge className={cn(
+                                "border-0 h-5 text-[9px] uppercase tracking-wider font-bold",
+                                isExpired ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                              )}>
+                                {isExpired ? "Expiré" : "Actif"}
+                              </Badge>
                             </div>
                             <div className="grid grid-cols-2 gap-2 mt-3">
                               <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
                                 <p className="text-[8px] text-muted-foreground uppercase font-bold">Investi</p>
                                 <p className="text-xs font-black text-gray-800">{inv.product.price.toLocaleString()} FCFA</p>
                               </div>
+                              <div className="bg-green-50/30 p-2 rounded-xl border border-green-100/50">
+                                <p className="text-[8px] text-green-600 uppercase font-bold">Gains /Jour</p>
+                                <p className="text-xs font-black text-green-700">{inv.product.dailyRate.toLocaleString()} FCFA</p>
+                              </div>
+                              <div className="bg-blue-50/30 p-2 rounded-xl border border-blue-100/50">
+                                <p className="text-[8px] text-blue-600 uppercase font-bold">Activation</p>
+                                <p className="text-xs font-black text-blue-700">{format(startDate, 'dd/MM/yy')}</p>
+                              </div>
                               <div className="bg-orange-50/50 p-2 rounded-xl border border-orange-100">
-                                <p className="text-[8px] text-orange-600 uppercase font-bold">Expire le</p>
-                                <p className="text-xs font-black text-orange-700">{format(expiryDate, 'dd/MM/yyyy', { locale: fr })}</p>
+                                <p className="text-[8px] text-orange-600 uppercase font-bold">Expiration</p>
+                                <p className="text-xs font-black text-orange-700">{format(expiryDate, 'dd/MM/yy')}</p>
                               </div>
                             </div>
                           </div>
