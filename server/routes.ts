@@ -92,8 +92,17 @@ export async function registerRoutes(
     
     // Admin bypass for manual VIP assignment
     if (!bypassBalance || !req.user!.isAdmin) {
-      if (user!.balance < product.price) return res.status(400).send("Insufficient balance");
+      if (user!.balance < product.price) return res.status(400).send("Solde insuffisant");
       await storage.updateUser(user!.id, { balance: user!.balance - product.price });
+      
+      // Create transaction record for the purchase
+      await storage.createTransaction({
+        userId: user!.id,
+        type: "withdrawal",
+        amount: product.price,
+        status: "completed",
+        method: "VIP Purchase: " + product.name
+      });
     }
     
     // Create investment
