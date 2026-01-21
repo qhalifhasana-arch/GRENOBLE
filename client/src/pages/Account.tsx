@@ -2,12 +2,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, Shield, User, Settings, CreditCard, ChevronRight } from "lucide-react";
+import { LogOut, Shield, User, Settings, CreditCard, ChevronRight, Sprout, Loader2, Wallet, Clock, CalendarDays } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { Investment, Product } from "@shared/schema";
+import { api } from "@shared/routes";
+import { format, addDays } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 
 export default function Account() {
   const { user, logout } = useAuth();
+
+  const { data: investments, isLoading: loadingInvestments } = useQuery<(Investment & { product: Product })[]>({
+    queryKey: [api.investments.list.path],
+  });
 
   const menuItems = [
     { icon: User, label: "Informations Personnelles" },
@@ -34,6 +44,51 @@ export default function Account() {
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Mes Produits Section */}
+        <div className="space-y-3">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 px-1">
+            <Sprout className="w-5 h-5 text-primary" />
+            Mes Produits VIP
+          </h3>
+          
+          <Card className="border-0 shadow-sm rounded-2xl overflow-hidden">
+            <CardContent className="p-0">
+              {loadingInvestments ? (
+                <div className="p-8 flex justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : investments?.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-sm text-muted-foreground italic">Aucun produit actif</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {investments?.map((inv) => {
+                    const startDate = new Date(inv.startDate || Date.now());
+                    const expiryDate = addDays(startDate, inv.product.duration);
+                    return (
+                      <div key={inv.id} className="p-4 bg-white">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-bold text-sm">VIP {inv.product.vipLevel} - {inv.product.name}</span>
+                          <Badge className="bg-green-100 text-green-700 border-0 h-5 text-[10px] uppercase">Actif</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Wallet className="w-3 h-3" /> {inv.product.price.toLocaleString()} FCFA
+                          </div>
+                          <div className="flex items-center gap-1 text-[11px] text-orange-600 font-medium justify-end">
+                            <Clock className="w-3 h-3" /> Exp: {format(expiryDate, 'dd/MM/yy', { locale: fr })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         <Card className="border-0 shadow-sm rounded-2xl overflow-hidden">
            <CardContent className="p-0">
              {menuItems.map((item, index) => (

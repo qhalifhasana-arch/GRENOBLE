@@ -74,60 +74,6 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Mes Investissements VIP */}
-        <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-3 ml-1 flex items-center gap-2">
-            <Sprout className="w-5 h-5 text-primary" />
-            Mes VIP Actifs
-          </h3>
-          
-          <div className="space-y-3">
-            {loadingInvestments ? (
-              <div className="flex justify-center p-8 bg-white rounded-2xl border border-gray-100">
-                <Loader2 className="animate-spin text-primary w-6 h-6" />
-              </div>
-            ) : investments?.length === 0 ? (
-              <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-gray-300">
-                <p className="text-muted-foreground text-sm italic">Aucun investissement actif</p>
-                <Link href="/products">
-                  <Button variant="link" className="text-primary font-bold mt-2">
-                    Voir les produits <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              investments?.map((inv) => {
-                const startDate = new Date(inv.startDate || Date.now());
-                const expiryDate = addDays(startDate, inv.product.duration);
-                return (
-                  <Card key={inv.id} className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
-                    <div className="p-3 bg-primary/5 flex justify-between items-center border-b border-primary/10">
-                      <span className="font-bold text-sm text-primary">VIP {inv.product.vipLevel} - {inv.product.name}</span>
-                      <Badge className="bg-green-100 text-green-700 border-0 h-5 text-[10px] uppercase tracking-wider">{inv.status}</Badge>
-                    </div>
-                    <CardContent className="p-3 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Wallet className="w-3 h-3" /> Investi
-                        </span>
-                        <span className="font-bold text-xs">{inv.product.price.toLocaleString()} FCFA</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Expiration
-                        </span>
-                        <span className="text-xs font-bold text-orange-600">
-                          {format(expiryDate, 'dd MMM yyyy', { locale: fr })}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-          </div>
-        </div>
-
         {/* Action Call */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
           <div className="flex gap-4 items-center">
