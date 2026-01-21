@@ -2,31 +2,50 @@ import { useDeposit } from "@/hooks/use-transactions";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Wallet } from "lucide-react";
-import { useState } from "react";
+import { Loader2, Wallet, Globe, CheckCircle2, ChevronRight, Info } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const AMOUNTS = [3000, 5000, 10000, 20000, 50000, 100000];
+
+const PAYMENT_METHODS: Record<string, string[]> = {
+  "Togo": ["TMoney", "Flooz"],
+  "Bénin": ["MTN MoMo", "Moov Money"],
+  "Sénégal": ["Orange Money", "Wave"],
+  "Côte d'Ivoire": ["Orange Money", "MTN MoMo", "Moov Money", "Wave"],
+  "Burkina Faso": ["Orange Money", "MTN MoMo", "Moov Money"],
+  "Mali": ["Orange Money", "Moov Money"],
+  "Congo-Brazzaville": ["Mobile Money Congo"],
+};
 
 const depositSchema = z.object({
   amount: z.coerce.number().min(3000, "Minimum 3000 FCFA"),
   firstName: z.string().min(2, "Requis"),
   lastName: z.string().min(2, "Requis"),
-  method: z.string().min(1, "Requis"),
+  country: z.string().min(1, "Veuillez choisir votre pays"),
+  method: z.string().min(1, "Veuillez choisir un moyen de paiement"),
 });
 
 export default function Deposit() {
   const { user } = useAuth();
   const deposit = useDeposit();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   const form = useForm<z.infer<typeof depositSchema>>({
     resolver: zodResolver(depositSchema),
@@ -34,18 +53,94 @@ export default function Deposit() {
       amount: 3000,
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      method: "mobile_money",
+      country: user?.country || "",
+      method: "",
     },
   });
+
+  const selectedCountry = form.watch("country");
+  const availableMethods = useMemo(() => {
+    return selectedCountry ? PAYMENT_METHODS[selectedCountry] || [] : [];
+  }, [selectedCountry]);
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
     form.setValue("amount", amount);
   };
 
-  const onSubmit = (values: z.infer<typeof depositSchema>) => {
-    deposit.mutate(values);
+  const onPreSubmit = (values: z.infer<typeof depositSchema>) => {
+    setShowSummary(true);
   };
+
+  const confirmAndSubmit = () => {
+    deposit.mutate(form.getValues());
+  };
+
+  if (showSummary) {
+    const values = form.getValues();
+    return (
+      <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="bg-primary px-6 pt-12 pb-8 rounded-b-[2rem] shadow-lg">
+          <h1 className="text-2xl font-bold text-white font-display mb-1 text-center">Récapitulatif de Paiement</h1>
+        </div>
+
+        <div className="p-4 -mt-6">
+          <Card className="border-0 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+            <CardHeader className="bg-green-50/50 border-b border-green-100 p-8 text-center">
+              <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-4" />
+              <CardTitle className="text-xl font-black text-slate-900">Vérifiez vos informations</CardTitle>
+              <CardDescription>Confirmez avant de procéder au paiement</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                  <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Pays choisi</span>
+                  <span className="font-black text-slate-900">{values.country}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                  <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Moyen de paiement</span>
+                  <Badge className="bg-primary/10 text-primary border-0 font-black px-3 py-1">{values.method}</Badge>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-gray-50">
+                  <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Investisseur</span>
+                  <span className="font-black text-slate-900">{values.firstName} {values.lastName}</span>
+                </div>
+                <div className="flex justify-between items-center py-4 bg-primary/5 rounded-2xl px-4">
+                  <span className="text-primary text-sm font-black uppercase tracking-widest">Montant à payer</span>
+                  <span className="text-xl font-black text-primary">{values.amount.toLocaleString()} FCFA</span>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex gap-3">
+                <Info className="w-5 h-5 text-amber-600 shrink-0" />
+                <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
+                  En cliquant sur le bouton ci-dessous, vous serez redirigé vers la page de paiement sécurisée de notre partenaire local.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4">
+                <Button 
+                  onClick={confirmAndSubmit}
+                  className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                  disabled={deposit.isPending}
+                >
+                  {deposit.isPending ? <Loader2 className="animate-spin mr-2" /> : "Procéder au paiement"}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowSummary(false)}
+                  className="w-full h-12 text-muted-foreground font-bold hover:bg-gray-100 rounded-2xl"
+                >
+                  Modifier les informations
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -55,44 +150,136 @@ export default function Deposit() {
       </div>
 
       <div className="p-4 -mt-6">
-        <Card className="border-0 shadow-lg rounded-2xl mb-6">
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-500 mb-3">Sélectionner un montant</p>
-            <div className="grid grid-cols-3 gap-3">
-              {AMOUNTS.map((amount) => (
-                <button
-                  key={amount}
-                  type="button"
-                  onClick={() => handleAmountSelect(amount)}
-                  className={cn(
-                    "py-3 rounded-xl border text-sm font-bold transition-all",
-                    selectedAmount === amount 
-                      ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
-                      : "bg-white border-gray-100 text-gray-700 hover:border-primary/50"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onPreSubmit)} className="space-y-6">
+            <Card className="border-0 shadow-lg rounded-[2rem] overflow-hidden bg-white">
+              <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-8 py-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-xl text-primary">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black">Localisation</CardTitle>
+                    <CardDescription>Étape 1 : Choisissez votre zone</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8">
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3 block">Choisir votre pays</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="rounded-2xl h-14 bg-gray-50 border-gray-100 font-bold text-lg">
+                            <SelectValue placeholder="Sélectionnez un pays" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                          {Object.keys(PAYMENT_METHODS).map(country => (
+                            <SelectItem key={country} value={country} className="py-3 font-bold text-base">
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                >
-                  {amount.toLocaleString()}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                />
+              </CardContent>
+            </Card>
 
-        <Card className="border-0 shadow-lg rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-lg">Détails du Paiement</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {selectedCountry && (
+              <Card className="border-0 shadow-lg rounded-[2rem] overflow-hidden bg-white animate-in slide-in-from-bottom-4 duration-300">
+                <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-8 py-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-xl text-primary">
+                      <Wallet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-black">Mode de Paiement</CardTitle>
+                      <CardDescription>Étape 2 : Moyens disponibles au {selectedCountry}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <FormField
+                    control={form.control}
+                    name="method"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid grid-cols-1 gap-3"
+                          >
+                            {availableMethods.map((method) => (
+                              <FormItem key={method} className="flex items-center space-x-3 space-y-0 rounded-2xl border border-gray-100 p-5 bg-gray-50/30 hover:bg-primary/5 hover:border-primary/20 transition-all cursor-pointer group">
+                                <FormControl>
+                                  <RadioGroupItem value={method} className="border-primary text-primary" />
+                                </FormControl>
+                                <FormLabel className="font-bold flex-1 cursor-pointer text-slate-900 group-hover:text-primary transition-colors">
+                                  {method}
+                                </FormLabel>
+                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                              </FormItem>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="border-0 shadow-lg rounded-[2rem] overflow-hidden bg-white">
+              <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-8 py-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-xl text-primary">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-black">Montant & Identité</CardTitle>
+                    <CardDescription>Étape 3 : Détails de la transaction</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-8 space-y-6">
+                <div className="space-y-4">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Sélectionner un montant rapide</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {AMOUNTS.map((amount) => (
+                      <button
+                        key={amount}
+                        type="button"
+                        onClick={() => handleAmountSelect(amount)}
+                        className={cn(
+                          "py-4 rounded-2xl border text-sm font-black transition-all active:scale-95",
+                          selectedAmount === amount 
+                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                            : "bg-white border-gray-100 text-gray-700 hover:border-primary/50"
+                        )}
+                      >
+                        {amount.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Montant (FCFA)</FormLabel>
+                      <FormLabel>Montant personnalisé (FCFA)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                        <Input type="number" {...field} className="rounded-2xl h-14 bg-gray-50 border-gray-100 text-lg font-bold px-6" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -107,7 +294,7 @@ export default function Deposit() {
                       <FormItem>
                         <FormLabel>Prénom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -120,53 +307,24 @@ export default function Deposit() {
                       <FormItem>
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="method"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Moyen de Paiement</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-gray-200 p-4">
-                            <FormControl>
-                              <RadioGroupItem value="mobile_money" />
-                            </FormControl>
-                            <FormLabel className="font-normal flex-1 cursor-pointer">
-                              Mobile Money
-                            </FormLabel>
-                            <Wallet className="h-4 w-4 text-gray-400" />
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
+                      </FormMessage>
                     </FormItem>
                   )}
                 />
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-secondary hover:bg-secondary/90 text-white font-bold rounded-xl py-6 text-lg shadow-lg shadow-secondary/30 mt-4"
-                  disabled={deposit.isPending}
+                  className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-[1.5rem] shadow-xl shadow-primary/20 transition-all active:scale-[0.98] mt-4"
                 >
-                  {deposit.isPending ? <Loader2 className="animate-spin mr-2" /> : "Continuer vers le paiement"}
+                  Continuer vers le récapitulatif
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
       </div>
       <BottomNav />
     </div>

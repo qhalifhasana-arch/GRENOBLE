@@ -90,6 +90,33 @@ export default function Register() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem className="mb-6">
+                      <FormLabel className="text-lg font-black text-primary uppercase tracking-wider">Étape 1 : Choisissez votre pays</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="rounded-2xl h-14 bg-primary/5 border-primary/20 text-lg font-bold">
+                            <SelectValue placeholder="Sélectionnez votre pays" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-2xl border-primary/10 shadow-xl">
+                          <SelectItem value="Togo" className="py-3 font-bold">🇹🇬 Togo</SelectItem>
+                          <SelectItem value="Bénin" className="py-3 font-bold">🇧🇯 Bénin</SelectItem>
+                          <SelectItem value="Sénégal" className="py-3 font-bold">🇸🇳 Sénégal</SelectItem>
+                          <SelectItem value="Côte d'Ivoire" className="py-3 font-bold">🇨🇮 Côte d'Ivoire</SelectItem>
+                          <SelectItem value="Burkina Faso" className="py-3 font-bold">🇧🇫 Burkina Faso</SelectItem>
+                          <SelectItem value="Mali" className="py-3 font-bold">🇲🇱 Mali</SelectItem>
+                          <SelectItem value="Congo-Brazzaville" className="py-3 font-bold">🇨🇬 Congo-Brazzaville</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -118,33 +145,6 @@ export default function Register() {
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pays</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="rounded-xl bg-gray-50 border-gray-200">
-                            <SelectValue placeholder="Sélectionnez votre pays" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Togo">🇹🇬 Togo</SelectItem>
-                          <SelectItem value="Bénin">🇧🇯 Bénin</SelectItem>
-                          <SelectItem value="Sénégal">🇸🇳 Sénégal</SelectItem>
-                          <SelectItem value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</SelectItem>
-                          <SelectItem value="Burkina Faso">🇧🇫 Burkina Faso</SelectItem>
-                          <SelectItem value="Mali">🇲🇱 Mali</SelectItem>
-                          <SelectItem value="Congo-Brazzaville">🇨🇬 Congo-Brazzaville</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}

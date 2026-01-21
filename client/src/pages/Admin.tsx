@@ -255,6 +255,9 @@ export default function Admin() {
               <TabsTrigger value="users" className="rounded-2xl px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-sm transition-all whitespace-nowrap">
                 <UsersIcon className="w-4 h-4 mr-2" /> Utilisateurs
               </TabsTrigger>
+              <TabsTrigger value="registrations" className="rounded-2xl px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-sm transition-all whitespace-nowrap">
+                <UserPlus className="w-4 h-4 mr-2" /> Inscriptions
+              </TabsTrigger>
               <TabsTrigger value="settings" className="rounded-2xl px-6 py-3 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-sm transition-all whitespace-nowrap">
                 <SettingsIcon className="w-4 h-4 mr-2" /> Réglages Liens
               </TabsTrigger>
@@ -391,6 +394,53 @@ export default function Admin() {
                             </Button>
                             <AddVIPDialog products={products || []} onAdd={(productId) => addInvestmentMutation.mutate({ userId: u.id, productId })} />
                           </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="registrations">
+            <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+              <CardHeader className="px-8 py-6 border-b border-gray-50 bg-blue-50/30">
+                <CardTitle className="text-xl font-black text-slate-900">Toutes les Inscriptions</CardTitle>
+                <CardDescription>Liste exhaustive des utilisateurs enregistrés</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-gray-50/50">
+                    <TableRow>
+                      <TableHead className="px-8 py-4 font-black uppercase text-[10px]">Utilisateur</TableHead>
+                      <TableHead className="py-4 font-black uppercase text-[10px]">Pays</TableHead>
+                      <TableHead className="py-4 font-black uppercase text-[10px]">Inscrit le</TableHead>
+                      <TableHead className="py-4 font-black uppercase text-[10px]">Solde Actuel</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users?.map((u) => (
+                      <TableRow key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                        <TableCell className="px-8 py-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10 border border-gray-100">
+                              <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-xs uppercase">{u.firstName[0]}{u.lastName[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-bold text-sm text-slate-900 leading-none mb-1">{u.firstName} {u.lastName}</p>
+                              <p className="text-[11px] text-muted-foreground font-mono">{u.phoneNumber}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="border-gray-200 font-bold text-[10px]">{u.country}</Badge>
+                        </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground">
+                          {format(new Date(u.createdAt || Date.now()), 'dd/MM/yyyy HH:mm')}
+                        </TableCell>
+                        <TableCell>
+                          <p className="font-black text-sm text-primary">{u.balance.toLocaleString()} FCFA</p>
                         </TableCell>
                       </TableRow>
                     ))}
