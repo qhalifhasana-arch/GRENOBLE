@@ -144,6 +144,12 @@ export async function registerRoutes(
     res.json(transactions);
   });
 
+  app.get(api.investments.list.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    const investments = await storage.getInvestmentsByUser(req.user!.id);
+    res.json(investments);
+  });
+
   // Team
   app.get(api.team.stats.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");

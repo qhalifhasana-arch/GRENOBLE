@@ -133,6 +133,15 @@ export const api = {
       },
     },
   },
+  investments: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/investments',
+      responses: {
+        200: z.array(z.custom<typeof investments.$inferSelect & { product: typeof products.$inferSelect }>()),
+      },
+    },
+  },
   admin: {
     stats: {
       method: 'GET' as const,

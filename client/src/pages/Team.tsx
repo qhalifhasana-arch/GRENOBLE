@@ -1,22 +1,22 @@
 import { useTeamStats } from "@/hooks/use-team";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Copy, Users, TrendingUp, Award } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Copy, Users, TrendingUp, Award, Wallet, Clock, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { Investment, Product } from "@shared/schema";
+import { api } from "@shared/routes";
+import { format, addDays } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default function Team() {
   const { data: stats, isLoading } = useTeamStats();
   const { toast } = useToast();
+  
+  const { data: investments, isLoading: loadingInvestments } = useQuery<(Investment & { product: Product })[]>({
+    queryKey: [api.investments.list.path],
+  });
 
   const copyLink = () => {
     if (stats?.referralLink) {
@@ -25,13 +25,7 @@ export default function Team() {
     }
   };
 
-  const chartData = [
-    { name: "Niv 1", members: stats?.level1 || 0, earnings: stats?.level1Earnings || 0 },
-    { name: "Niv 2", members: stats?.level2 || 0, earnings: stats?.level2Earnings || 0 },
-    { name: "Niv 3", members: stats?.level3 || 0, earnings: stats?.level3Earnings || 0 },
-  ];
-
-  if (isLoading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  if (isLoading || loadingInvestments) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -57,19 +51,61 @@ export default function Team() {
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-               <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-blue-100">
-                  Niveau 1: 27%
-               </div>
-               <div className="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-purple-100">
-                  Niveau 2: 2%
-               </div>
-               <div className="bg-pink-50 text-pink-700 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap border border-pink-100">
-                  Niveau 3: 3%
-               </div>
-            </div>
           </CardContent>
         </Card>
+
+        <section className="space-y-4">
+          <h3 className="font-bold text-gray-800 flex items-center gap-2 px-2">
+            <Wallet className="w-5 h-5 text-primary" />
+            Mes Investissements VIP
+          </h3>
+          
+          {investments?.length === 0 ? (
+            <Card className="border-dashed border-2 border-gray-200 shadow-none rounded-2xl bg-transparent">
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground italic">Aucun investissement actif</p>
+              </CardContent>
+            </Card>
+          ) : (
+            investments?.map((inv) => {
+              const startDate = new Date(inv.startDate || Date.now());
+              const expiryDate = addDays(startDate, inv.product.duration);
+              
+              return (
+                <Card key={inv.id} className="border-0 shadow-md rounded-2xl overflow-hidden bg-white">
+                  <div className="p-4 bg-primary/5 flex justify-between items-center border-b border-primary/10">
+                    <span className="font-bold text-primary">VIP {inv.product.vipLevel} - {inv.product.name}</span>
+                    <Badge className="bg-green-100 text-green-700 border-0">{inv.status}</Badge>
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4" /> Fonds Investi
+                      </span>
+                      <span className="font-bold">{inv.product.price.toLocaleString()} FCFA</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <CalendarDays className="w-4 h-4" /> Date d'achat
+                      </span>
+                      <span className="text-sm font-medium">
+                        {format(startDate, 'dd MMM yyyy', { locale: fr })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-4 h-4" /> Expiration
+                      </span>
+                      <span className="text-sm font-bold text-orange-600">
+                        {format(expiryDate, 'dd MMM yyyy', { locale: fr })}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </section>
 
         <div className="grid grid-cols-2 gap-4">
            <Card className="border-0 shadow-md rounded-2xl bg-white">
@@ -91,29 +127,6 @@ export default function Team() {
               </CardContent>
            </Card>
         </div>
-
-        <Card className="border-0 shadow-md rounded-2xl">
-           <CardContent className="p-6">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                 <TrendingUp className="w-4 h-4 text-primary" />
-                 Gains par Niveau
-              </h3>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={12} />
-                    <YAxis axisLine={false} tickLine={false} fontSize={12} />
-                    <Tooltip 
-                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
-                       cursor={{ fill: '#f3f4f6' }}
-                    />
-                    <Bar dataKey="earnings" fill="#e6ac00" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-           </CardContent>
-        </Card>
       </div>
       <BottomNav />
     </div>

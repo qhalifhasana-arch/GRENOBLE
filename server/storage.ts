@@ -15,6 +15,7 @@ export interface IStorage {
   getAllProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   createInvestment(userId: number, productId: number): Promise<Investment>;
+  getInvestmentsByUser(userId: number): Promise<(Investment & { product: Product })[]>;
   
   // Transactions
   createTransaction(transaction: Partial<Transaction>): Promise<Transaction>;
@@ -77,12 +78,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createInvestment(userId: number, productId: number): Promise<Investment> {
+    const product = await this.getProduct(productId);
+    if (!product) throw new Error("Product not found");
+    
     const [investment] = await db.insert(investments).values({
       userId,
       productId,
-      status: "active"
+      status: "active",
+      startDate: new Date(),
+      lastCollectionDate: new Date()
     }).returning();
     return investment;
+  }
+
+  async getInvestmentsByUser(userId: number): Promise<(Investment & { product: Product })[]> {
+    const results = await db.select({
+      investment: investments,
+      product: products
+    })
+    .from(investments)
+    .innerJoin(products, eq(investments.productId, products.id))
+    .where(eq(investments.userId, userId))
+    .orderBy(desc(investments.startDate));
+
+    return results.map(r => ({
+      ...r.investment,
+      product: r.product
+    }));
   }
 
   async createTransaction(transaction: Partial<Transaction>): Promise<Transaction> {

@@ -64,7 +64,7 @@ export default function Products() {
                     disabled={invest.isPending}
                     className="bg-primary hover:bg-primary/90 rounded-xl px-6 shadow-lg shadow-primary/20"
                   >
-                    {invest.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Investir"}
+                    {invest.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Acheter maintenant"}
                   </Button>
                 </div>
               </CardFooter>
