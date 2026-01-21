@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 const AMOUNTS = [3000, 5000, 10000, 20000, 50000, 100000];
 
@@ -160,7 +161,7 @@ export default function Deposit() {
                   </div>
                   <div>
                     <CardTitle className="text-lg font-black">Localisation</CardTitle>
-                    <CardDescription>Étape 1 : Choisissez votre zone</CardDescription>
+                    <CardDescription>Étape 1 : Choisissez votre pays</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -310,10 +311,10 @@ export default function Deposit() {
                           <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" />
                         </FormControl>
                         <FormMessage />
-                      </FormMessage>
-                    </FormItem>
-                  )}
-                />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <Button 
                   type="submit" 

@@ -112,26 +112,30 @@ export default function Team() {
               </CardTitle>
            </CardHeader>
            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">1</div>
-                  <span className="text-sm font-semibold text-gray-700">Gains Niveau 1</span>
-                </div>
-                <span className="font-bold text-green-600">{stats?.level1Earnings?.toLocaleString() || 0} FCFA</span>
+              <div className="bg-blue-50/30 p-4 rounded-2xl border border-blue-100 flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
+                     <Award className="w-5 h-5" />
+                   </div>
+                   <div>
+                     <p className="text-[10px] uppercase font-black text-blue-600 tracking-widest">Niveau 1 (Direct)</p>
+                     <p className="text-sm font-bold text-slate-900">Commission de 27%</p>
+                   </div>
+                 </div>
+                 <span className="text-xl font-black text-blue-700">{stats?.level1Earnings?.toLocaleString() || 0} F</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">2</div>
-                  <span className="text-sm font-semibold text-gray-700">Gains Niveau 2</span>
-                </div>
-                <span className="font-bold text-blue-600">{stats?.level2Earnings?.toLocaleString() || 0} FCFA</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">3</div>
-                  <span className="text-sm font-semibold text-gray-700">Gains Niveau 3</span>
-                </div>
-                <span className="font-bold text-purple-600">{stats?.level3Earnings?.toLocaleString() || 0} FCFA</span>
+
+              <div className="grid grid-cols-2 gap-3">
+                 <div className="bg-green-50/30 p-4 rounded-2xl border border-green-100">
+                   <p className="text-[9px] uppercase font-black text-green-600 tracking-widest mb-1">Niveau 2</p>
+                   <p className="text-sm font-black text-green-700">{stats?.level2Earnings?.toLocaleString() || 0} F</p>
+                   <p className="text-[8px] font-bold text-green-500 mt-1">Gains 2%</p>
+                 </div>
+                 <div className="bg-purple-50/30 p-4 rounded-2xl border border-purple-100">
+                   <p className="text-[9px] uppercase font-black text-purple-600 tracking-widest mb-1">Niveau 3</p>
+                   <p className="text-sm font-black text-purple-700">{stats?.level3Earnings?.toLocaleString() || 0} F</p>
+                   <p className="text-[8px] font-bold text-purple-500 mt-1">Gains 3%</p>
+                 </div>
               </div>
            </CardContent>
         </Card>
