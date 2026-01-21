@@ -135,6 +135,45 @@ export default function Account() {
             <Button variant="outline" className="w-full mt-4" onClick={() => setActiveTab(null)}>Retour</Button>
           </div>
         );
+      case "about":
+        return (
+          <div className="space-y-6 pt-4">
+            <div className="bg-primary/5 p-6 rounded-[2.5rem] border border-primary/10">
+              <h3 className="text-xl font-black text-primary mb-3">À propos de nous</h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                GREENIX est une plateforme d'investissement agricole de pointe, conçue pour connecter les investisseurs modernes aux opportunités de croissance dans le secteur agropastoral en Afrique. 
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="bg-primary/10 p-3 rounded-2xl h-fit">
+                  <Sprout className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-1">Notre Mission</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Démocratiser l'accès à l'investissement agricole durable en offrant des solutions performantes, transparentes et accessibles à tous, tout en soutenant le développement rural.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 italic text-center">
+                <p className="text-primary font-black text-sm uppercase tracking-wide">
+                  "Gagnez avec les meilleurs investissements agricoles durables et performants"
+                </p>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 px-1">Fonctionnement</h4>
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2">
+                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Choisissez un pack VIP adapté à votre budget.</p>
+                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Accumulez des revenus journaliers pendant 60 jours.</p>
+                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Retirez vos gains via Mobile Money MTN ou Orange.</p>
+                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Parrainez vos amis pour gagner des commissions sur 3 niveaux.</p>
+                </div>
+              </div>
+            </div>
+            <Button variant="outline" className="w-full mt-2" onClick={() => setActiveTab(null)}>Retour</Button>
+          </div>
+        );
       default:
         return (
           <div className="space-y-4">
@@ -167,7 +206,7 @@ export default function Account() {
                           <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex flex-col">
-                                <span className="font-bold text-sm">VIP {inv.product.vipLevel} - {inv.product.name}</span>
+                                <span className="font-bold text-sm">{inv.product.name}</span>
                                 <span className="text-[10px] text-muted-foreground">Acquis le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
                               </div>
                               <Badge className="bg-green-100 text-green-700 border-0 h-5 text-[9px] uppercase tracking-wider font-bold">Actif</Badge>
@@ -230,6 +269,20 @@ export default function Account() {
                     <Settings className="w-5 h-5" />
                   </div>
                   <span className="font-bold text-gray-700">Paramètres du compte</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                className="w-full justify-between h-16 bg-white rounded-2xl shadow-sm border border-gray-50 px-4 group hover-elevate"
+                onClick={() => setActiveTab('about')}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="bg-purple-100 p-2.5 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <span className="font-bold text-gray-700">À propos de nous</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-300" />
               </Button>
