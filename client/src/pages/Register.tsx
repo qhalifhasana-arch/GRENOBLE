@@ -5,6 +5,7 @@ import { Loader2, Sprout } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import farmImg from "@assets/stock_images/modern_professional__678ca4d2.jpg";
 import {
   Form,
   FormControl,
@@ -53,7 +54,20 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center p-4">
+      {/* Hero Section with Image */}
+      <div className="w-full max-w-2xl mt-4 mb-8 overflow-hidden rounded-3xl relative h-48 md:h-64 shadow-2xl">
+        <img 
+          src={farmImg} 
+          alt="Exploitation Agricole" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
+          <h2 className="text-white text-2xl font-bold">Bienvenue chez GREENIX</h2>
+          <p className="text-white/80 text-sm">L'agriculture de demain, dès aujourd'hui.</p>
+        </div>
+      </div>
+
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
            <div className="flex justify-center mb-4">
@@ -195,7 +209,7 @@ export default function Register() {
           </CardContent>
         </Card>
         
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-4 pb-12">
           En vous inscrivant, vous acceptez nos <span className="text-primary underline cursor-pointer">conditions d'utilisation</span>.
         </p>
       </div>
