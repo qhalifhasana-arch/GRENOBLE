@@ -105,25 +105,16 @@ export default function Dashboard() {
         </div>
 
         {/* Community Links */}
-        <div className="grid grid-cols-2 gap-3">
-          <a href={tgChannel} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-[#0088cc]/10 p-4 rounded-3xl border border-[#0088cc]/20 hover:bg-[#0088cc]/20 transition-all">
+        <div className="grid grid-cols-1 gap-3">
+          <Link href="/support" className="flex items-center gap-3 bg-[#0088cc]/10 p-4 rounded-3xl border border-[#0088cc]/20 hover:bg-[#0088cc]/20 transition-all">
             <div className="bg-[#0088cc] p-2 rounded-xl text-white">
               <Send className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-[#0088cc] tracking-tighter">Canal OFF</span>
+              <span className="text-[10px] font-black uppercase text-[#0088cc] tracking-tighter">Support Client</span>
               <span className="text-xs font-bold text-[#0088cc]">TELEGRAM</span>
             </div>
-          </a>
-          <a href={tgGroup} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-[#25D366]/10 p-4 rounded-3xl border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all">
-            <div className="bg-[#25D366] p-2 rounded-xl text-white">
-              <MessageCircle className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-[#25D366] tracking-tighter">Discussion</span>
-              <span className="text-xs font-bold text-[#25D366]">GROUPE</span>
-            </div>
-          </a>
+          </Link>
         </div>
 
         {/* Promotional Banner */}

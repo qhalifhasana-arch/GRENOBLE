@@ -223,12 +223,11 @@ export default function Account() {
             </div>
 
             {/* Quick Actions Circles */}
-            <div className="grid grid-cols-4 gap-2 px-4 py-6 bg-white mb-2 shadow-sm">
+            <div className="grid grid-cols-3 gap-2 px-4 py-6 bg-white mb-2 shadow-sm">
               {[
                 { icon: Wallet, label: "Recharger", href: "/deposit", color: "text-blue-600", bg: "bg-blue-50" },
                 { icon: Landmark, label: "Retirer", href: "/withdraw", color: "text-rose-600", bg: "bg-rose-50" },
-                { icon: MessageCircle, label: "Aide", href: "#", color: "text-amber-600", bg: "bg-amber-50" },
-                { icon: History, label: "Activités", href: "#", color: "text-purple-600", bg: "bg-purple-50" },
+                { icon: MessageCircle, label: "Telegram", href: "/support", color: "text-[#0088cc]", bg: "bg-[#0088cc]/10" },
               ].map((item) => (
                 <Link key={item.label} href={item.href}>
                   <div className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
@@ -239,22 +238,6 @@ export default function Account() {
                   </div>
                 </Link>
               ))}
-            </div>
-
-            {/* Task Center Banner (Professional Style) */}
-            <div className="px-4 py-2 mb-2">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[1.5rem] p-6 relative overflow-hidden shadow-lg">
-                <div className="relative z-10">
-                  <h3 className="text-white text-xl font-black mb-1">Centre des Tâches</h3>
-                  <p className="text-white/70 text-[11px] mb-4 max-w-[200px] font-medium leading-relaxed">Complétez les tâches et obtenez des bonus généreux</p>
-                  <Button className="bg-white text-blue-600 hover:bg-white/90 rounded-full px-8 h-10 font-black text-xs uppercase shadow-xl transition-all active:scale-95">
-                    ALLER
-                  </Button>
-                </div>
-                <div className="absolute top-0 right-0 -mr-4 -mt-4 opacity-10">
-                  <Shield className="w-32 h-32 text-white" />
-                </div>
-              </div>
             </div>
 
             <div className="px-4 pt-4 pb-2">
