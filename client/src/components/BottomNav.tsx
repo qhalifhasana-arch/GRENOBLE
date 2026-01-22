@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Sprout, Wallet, ArrowDownUp, Users, User } from "lucide-react";
+import { Home, ShoppingBag, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -7,9 +7,9 @@ export function BottomNav() {
 
   const navItems = [
     { icon: Home, label: "Accueil", href: "/dashboard" },
-    { icon: Sprout, label: "Produits", href: "/products" },
+    { icon: ShoppingBag, label: "Produit", href: "/products" },
     { icon: Users, label: "Équipe", href: "/team" },
-    { icon: User, label: "Compte", href: "/account" },
+    { icon: User, label: "Moi", href: "/account" },
   ];
 
   return (

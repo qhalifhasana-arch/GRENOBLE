@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   LogOut, Shield, User, Settings, CreditCard, ChevronRight, 
   Sprout, Loader2, Wallet, Clock, CalendarDays, Phone, Mail, 
-  MapPin, Lock, Smartphone, Landmark, Bell
+  MapPin, Lock, Smartphone, Landmark, Bell, History, MessageCircle, ShoppingBag
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Investment, Product } from "@shared/schema";
+import { Investment, Product, Transaction } from "@shared/schema";
 import { api } from "@shared/routes";
 import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,6 +37,14 @@ export default function Account() {
   const { data: investments, isLoading: loadingInvestments } = useQuery<(Investment & { product: Product })[]>({
     queryKey: [api.investments.list.path],
   });
+
+  const { data: transactions } = useQuery<Transaction[]>({
+    queryKey: [api.transactions.list.path],
+  });
+
+  const totalEarnings = transactions?.filter(t => 
+    (t.type === 'daily_earning' || t.type === 'referral_reward') && t.status === 'completed'
+  ).reduce((sum, t) => sum + t.amount, 0) || 0;
 
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: any) => {
@@ -177,76 +185,83 @@ export default function Account() {
         );
       default:
         return (
-          <div className="space-y-4">
-            {/* Mes Produits Section */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2 px-1">
-                <Sprout className="w-5 h-5 text-primary" />
-                Mes Produits VIP
-              </h3>
+          <div className="pb-8">
+            <div className="bg-white px-6 pt-12 pb-6 border-b shadow-sm mb-2">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-black text-gray-900">Mon Compte</h1>
+                <button 
+                  onClick={() => logout.mutate()}
+                  className="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-[10px] font-bold text-gray-400">Quitter</span>
+                </button>
+              </div>
               
-              <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white">
-                <CardContent className="p-0">
-                  {loadingInvestments ? (
-                    <div className="p-8 flex justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : investments?.length === 0 ? (
-                    <div className="p-8 text-center bg-gray-50/50">
-                      <p className="text-sm text-muted-foreground italic">Aucun produit actif</p>
-                      <Link href="/products">
-                        <Button variant="link" className="text-primary font-bold mt-2">Découvrir les produits</Button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-50">
-                      {investments?.map((inv) => {
-                        const startDate = new Date(inv.startDate || Date.now());
-                        const expiryDate = addDays(startDate, inv.product.duration);
-                        const isExpired = inv.status === 'expired' || new Date() > expiryDate;
-                        
-                        return (
-                          <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex flex-col">
-                                <span className="font-bold text-sm">{inv.product.name}</span>
-                                <span className="text-[10px] text-muted-foreground">Activé le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
-                              </div>
-                              <Badge className={cn(
-                                "border-0 h-5 text-[9px] uppercase tracking-wider font-bold",
-                                isExpired ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-                              )}>
-                                {isExpired ? "Expiré" : "Actif"}
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 mt-3">
-                              <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
-                                <p className="text-[8px] text-muted-foreground uppercase font-bold">Investi</p>
-                                <p className="text-xs font-black text-gray-800">{inv.product.price.toLocaleString()} FCFA</p>
-                              </div>
-                              <div className="bg-green-50/30 p-2 rounded-xl border border-green-100/50">
-                                <p className="text-[8px] text-green-600 uppercase font-bold">Gains /Jour</p>
-                                <p className="text-xs font-black text-green-700">{inv.product.dailyRate.toLocaleString()} FCFA</p>
-                              </div>
-                              <div className="bg-blue-50/30 p-2 rounded-xl border border-blue-100/50">
-                                <p className="text-[8px] text-blue-600 uppercase font-bold">Activation</p>
-                                <p className="text-xs font-black text-blue-700">{format(startDate, 'dd/MM/yy')}</p>
-                              </div>
-                              <div className="bg-orange-50/50 p-2 rounded-xl border border-orange-100">
-                                <p className="text-[8px] text-orange-600 uppercase font-bold">Expiration</p>
-                                <p className="text-xs font-black text-orange-700">{format(expiryDate, 'dd/MM/yy')}</p>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-4 mb-8">
+                <Avatar className="w-16 h-16 border-2 border-primary shadow-sm">
+                  <AvatarFallback className="bg-primary text-white text-xl font-black">
+                    {user?.firstName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <p className="text-lg font-black text-slate-900 leading-none">{user?.phoneNumber}</p>
+                  <Badge className="bg-blue-600 text-white border-0 text-[10px] font-black h-5 uppercase px-2">Niv1</Badge>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 divide-x divide-gray-100 border-t pt-6">
+                <div className="text-center px-2">
+                  <p className="text-lg font-black text-primary mb-0.5">FCFA {user?.balance?.toLocaleString()}</p>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Solde du compte</p>
+                </div>
+                <div className="text-center px-2">
+                  <p className="text-lg font-black text-slate-900 mb-0.5">FCFA {totalEarnings.toLocaleString()}</p>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Revenus cumulés</p>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
+            {/* Quick Actions Circles */}
+            <div className="grid grid-cols-4 gap-2 px-4 py-6 bg-white mb-2 shadow-sm">
+              {[
+                { icon: Wallet, label: "Recharger", href: "/deposit", color: "text-blue-600", bg: "bg-blue-50" },
+                { icon: Landmark, label: "Retirer", href: "/withdraw", color: "text-rose-600", bg: "bg-rose-50" },
+                { icon: MessageCircle, label: "Aide", href: "#", color: "text-amber-600", bg: "bg-amber-50" },
+                { icon: History, label: "Activités", href: "#", color: "text-purple-600", bg: "bg-purple-50" },
+              ].map((item) => (
+                <Link key={item.label} href={item.href}>
+                  <div className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
+                    <div className={cn("w-12 h-12 rounded-full flex items-center justify-center shadow-sm", item.bg)}>
+                      <item.icon className={cn("w-5 h-5", item.color)} />
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-600">{item.label}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Task Center Banner (Professional Style) */}
+            <div className="px-4 py-2 mb-2">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[1.5rem] p-6 relative overflow-hidden shadow-lg">
+                <div className="relative z-10">
+                  <h3 className="text-white text-xl font-black mb-1">Centre des Tâches</h3>
+                  <p className="text-white/70 text-[11px] mb-4 max-w-[200px] font-medium leading-relaxed">Complétez les tâches et obtenez des bonus généreux</p>
+                  <Button className="bg-white text-blue-600 hover:bg-white/90 rounded-full px-8 h-10 font-black text-xs uppercase shadow-xl transition-all active:scale-95">
+                    ALLER
+                  </Button>
+                </div>
+                <div className="absolute top-0 right-0 -mr-4 -mt-4 opacity-10">
+                  <Shield className="w-32 h-32 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="px-4 pt-4 pb-2">
+              <h3 className="text-lg font-black text-gray-900">Plus</h3>
+            </div>
+
+            <div className="px-4 space-y-2">
               <Button 
                 variant="ghost" 
                 className="w-full justify-between h-16 bg-white rounded-2xl shadow-sm border border-gray-50 px-4 group hover-elevate"
@@ -304,21 +319,83 @@ export default function Account() {
               </Button>
             </div>
 
-            {user?.isAdmin && (
-               <Link href="/admin">
-                 <Button className="w-full bg-gray-900 text-white hover:bg-black h-14 rounded-2xl shadow-xl mt-4 font-bold tracking-wide">
-                    <Shield className="w-4 h-4 mr-2" /> Accéder au Panel Admin
-                 </Button>
-               </Link>
-            )}
+            {/* Mes Produits Section */}
+            <div className="px-4 mt-6 space-y-3">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2 px-1">
+                <Sprout className="w-5 h-5 text-primary" />
+                Mes Produits VIP
+              </h3>
+              
+              <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-white">
+                <CardContent className="p-0">
+                  {loadingInvestments ? (
+                    <div className="p-8 flex justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : investments?.length === 0 ? (
+                    <div className="p-8 text-center bg-gray-50/50">
+                      <p className="text-sm text-muted-foreground italic">Aucun produit actif</p>
+                      <Link href="/products" className="w-full">
+                        <Button variant="ghost" className="text-primary font-bold mt-2 w-full">Découvrir les produits</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-50">
+                      {investments?.map((inv) => {
+                        const startDate = new Date(inv.startDate || Date.now());
+                        const expiryDate = addDays(startDate, inv.product.duration);
+                        const isExpired = inv.status === 'expired' || new Date() > expiryDate;
+                        
+                        return (
+                          <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{inv.product.name}</span>
+                                <span className="text-[10px] text-muted-foreground">Activé le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
+                              </div>
+                              <Badge className={cn(
+                                "border-0 h-5 text-[9px] uppercase tracking-wider font-bold",
+                                isExpired ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                              )}>
+                                {isExpired ? "Expiré" : "Actif"}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mt-3">
+                              <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
+                                <p className="text-[8px] text-muted-foreground uppercase font-bold">Investi</p>
+                                <p className="text-xs font-black text-gray-800">{inv.product.price.toLocaleString()} FCFA</p>
+                              </div>
+                              <div className="bg-green-50/30 p-2 rounded-xl border border-green-100/50">
+                                <p className="text-[8px] text-green-600 uppercase font-bold">Gains /Jour</p>
+                                <p className="text-xs font-black text-green-700">{inv.product.dailyRate.toLocaleString()} FCFA</p>
+                              </div>
+                              <div className="bg-blue-50/30 p-2 rounded-xl border border-blue-100/50">
+                                <p className="text-[8px] text-blue-600 uppercase font-bold">Activation</p>
+                                <p className="text-xs font-black text-blue-700">{format(startDate, 'dd/MM/yy')}</p>
+                              </div>
+                              <div className="bg-orange-50/50 p-2 rounded-xl border border-orange-100">
+                                <p className="text-[8px] text-orange-600 uppercase font-bold">Expiration</p>
+                                <p className="text-xs font-black text-orange-700">{format(expiryDate, 'dd/MM/yy')}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-            <Button 
-              variant="destructive" 
-              className="w-full h-14 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 border-0 shadow-none font-bold mt-2"
-              onClick={() => logout.mutate()}
-            >
-              <LogOut className="w-4 h-4 mr-2" /> Se déconnecter
-            </Button>
+            {user?.isAdmin && (
+               <div className="px-4 mt-4">
+                 <Link href="/admin">
+                   <Button className="w-full bg-gray-900 text-white hover:bg-black h-14 rounded-2xl shadow-xl font-bold tracking-wide">
+                      <Shield className="w-4 h-4 mr-2" /> Accéder au Panel Admin
+                   </Button>
+                 </Link>
+               </div>
+            )}
           </div>
         );
     }
@@ -326,27 +403,7 @@ export default function Account() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-white p-6 pt-12 text-center border-b rounded-b-[2.5rem] shadow-sm mb-6">
-        <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-gray-50 shadow-xl">
-          <AvatarFallback className="bg-primary text-white text-3xl font-black">
-            {user?.firstName?.[0]}{user?.lastName?.[0]}
-          </AvatarFallback>
-        </Avatar>
-        <h1 className="text-2xl font-black text-gray-900 font-display leading-tight">
-          {user?.firstName} {user?.lastName}
-        </h1>
-        <div className="flex items-center justify-center gap-2 mt-1">
-          <Smartphone className="w-3 h-3 text-muted-foreground" />
-          <p className="text-muted-foreground text-xs font-medium tracking-wide">{user?.phoneNumber}</p>
-        </div>
-        <div className="mt-4 inline-flex items-center px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-[0.1em]">
-          {user?.isAdmin ? "Administrateur" : "Investisseur Vérifié"}
-        </div>
-      </div>
-
-      <div className="p-4">
-        {renderSection()}
-      </div>
+      {renderSection()}
       <BottomNav />
     </div>
   );
