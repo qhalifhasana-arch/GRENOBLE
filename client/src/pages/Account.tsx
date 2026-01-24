@@ -150,7 +150,7 @@ export default function Account() {
             <div className="bg-primary/5 p-6 rounded-[2.5rem] border border-primary/10">
               <h3 className="text-xl font-black text-primary mb-3">À propos de nous</h3>
               <p className="text-sm text-slate-700 leading-relaxed">
-                GREENIX est une plateforme d'investissement agricole de pointe, conçue pour connecter les investisseurs modernes aux opportunités de croissance dans le secteur agropastoral en Afrique. 
+                GreenHarvest est une plateforme d'investissement agricole de pointe, conçue pour connecter les investisseurs modernes aux opportunités de croissance dans le secteur agropastoral en Afrique. 
               </p>
             </div>
             <div className="space-y-4">

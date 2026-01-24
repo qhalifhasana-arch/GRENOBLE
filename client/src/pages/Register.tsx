@@ -63,7 +63,7 @@ export default function Register() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
-          <h2 className="text-white text-2xl font-bold">Bienvenue chez GREENIX</h2>
+          <h2 className="text-white text-2xl font-bold">Bienvenue chez GreenHarvest</h2>
           <p className="text-white/80 text-sm">L'agriculture de demain, dès aujourd'hui.</p>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function Register() {
                 <Sprout className="w-12 h-12 text-primary" />
               </div>
            </div>
-           <h1 className="text-4xl font-extrabold text-primary tracking-tight">GREENIX</h1>
+           <h1 className="text-4xl font-extrabold text-primary tracking-tight">GreenHarvest</h1>
            <p className="text-muted-foreground">Investissement Agricole Durable</p>
            
            <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg inline-block font-semibold text-sm mt-2 border border-amber-200">
