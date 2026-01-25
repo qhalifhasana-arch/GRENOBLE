@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User, Transaction, Setting, Product } from "@shared/schema";
+import { User as SchemaUser, Transaction, Setting, Product } from "@shared/schema";
 import { api } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { 
@@ -573,7 +573,7 @@ export default function Admin() {
   );
 }
 
-function BalanceEdit({ user, onUpdate }: { user: User, onUpdate: (balance: number) => void }) {
+function BalanceEdit({ user, onUpdate }: { user: SchemaUser, onUpdate: (balance: number) => void }) {
   const [val, setVal] = useState(user.balance.toString());
   return (
     <div className="flex items-center gap-2 max-w-[160px]">
