@@ -69,9 +69,13 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertProductSchema = createInsertSchema(products).omit({ id: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true, status: true });
 
+// Explicitly export types
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Investment = typeof investments.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type Setting = typeof settings.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+// Verified export: User
+// End of schema
