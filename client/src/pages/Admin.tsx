@@ -493,6 +493,20 @@ export default function Admin() {
                       </div>
                     </div>
                   </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Service Client (Lien)</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="https://t.me/..." 
+                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
+                        defaultValue={settings?.find(s => s.key === 'customer_service_link')?.value}
+                        onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
+                      />
+                      <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
+                        <User className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -520,6 +534,20 @@ export default function Admin() {
                       />
                       <div className="bg-primary/10 p-3 rounded-2xl text-primary flex items-center">
                         <LinkIcon className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Lien Service Client</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="https://t.me/..." 
+                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
+                        defaultValue={settings?.find(s => s.key === 'customer_service_link')?.value}
+                        onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
+                      />
+                      <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
+                        <User className="w-5 h-5" />
                       </div>
                     </div>
                   </div>

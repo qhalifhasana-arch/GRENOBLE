@@ -14,6 +14,7 @@ import Withdraw from "@/pages/Withdraw";
 import Team from "@/pages/Team";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
+import Support from "@/pages/Support";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType, adminOnly?: boolean }) {
@@ -66,6 +67,9 @@ function Router() {
       </Route>
       <Route path="/admin">
         <ProtectedRoute component={Admin} adminOnly />
+      </Route>
+      <Route path="/support">
+        <ProtectedRoute component={Support} />
       </Route>
       <Route component={NotFound} />
     </Switch>
