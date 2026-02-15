@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User as SchemaUser, Transaction, Setting, Product } from "@shared/schema";
+import { type User as SchemaUser, type Transaction, type Setting, type Product } from "@shared/schema";
 import { api } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { 
