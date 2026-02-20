@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowDownLeft, Wallet } from "lucide-react";
+import { Loader2, ArrowDownLeft, Wallet, HandCoins, TrendingDown } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { format } from "date-fns";
 import { Transaction } from "@shared/schema";
+import withdrawBg from "@/assets/images/withdraw-harvest.png";
 
 const withdrawSchema = z.object({
   amount: z.coerce.number().min(1000, "Minimum 1000 FCFA"),
@@ -49,17 +50,35 @@ export default function Withdraw() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28" data-testid="withdraw-page">
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 px-5 pt-12 pb-8 rounded-b-[2rem]">
-        <h1 className="text-2xl font-extrabold text-white">Retrait Sécurisé</h1>
-        <p className="text-gray-400 text-sm mt-1">Transférez vos gains vers votre mobile money</p>
+      <div className="relative overflow-hidden rounded-b-[2rem]">
+        <img src={withdrawBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-900/75 via-orange-800/70 to-yellow-900/85" />
+        <div className="relative px-5 pt-12 pb-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-white/20 backdrop-blur-sm w-11 h-11 rounded-xl flex items-center justify-center">
+              <HandCoins className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-white">Retrait Sécurisé</h1>
+              <p className="text-amber-100/80 text-sm">Récoltez vos gains</p>
+            </div>
+          </div>
+          <div className="mt-4 bg-white/15 backdrop-blur-sm rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-amber-100/70 text-xs font-semibold uppercase tracking-wider">Solde disponible</p>
+              <p className="text-white text-2xl font-extrabold">{user?.balance?.toLocaleString()} <span className="text-base font-bold text-amber-200/80">FCFA</span></p>
+            </div>
+            <Wallet className="w-8 h-8 text-amber-200/50" />
+          </div>
+        </div>
       </div>
 
       <div className="px-5 -mt-6 space-y-5 max-w-2xl mx-auto">
-        <Card className="border-0 shadow-sm rounded-2xl">
-          <CardHeader className="px-5 py-4 border-b border-gray-50">
+        <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+          <CardHeader className="px-5 py-4 border-b border-gray-50 bg-gradient-to-r from-amber-50 to-orange-50">
             <div className="flex justify-between items-center">
               <CardTitle className="text-base font-extrabold text-gray-800 flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-primary" />
+                <TrendingDown className="w-4 h-4 text-amber-600" />
                 Demande de Retrait
               </CardTitle>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 font-bold text-sm">
@@ -83,6 +102,20 @@ export default function Withdraw() {
                     </FormItem>
                   )}
                 />
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[5000, 10000, 25000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => form.setValue("amount", amt)}
+                      className="py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm font-bold hover:bg-amber-100 transition-all active:scale-95"
+                      data-testid={`button-withdraw-${amt}`}
+                    >
+                      {amt.toLocaleString()} F
+                    </button>
+                  ))}
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <FormField
@@ -129,7 +162,7 @@ export default function Withdraw() {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white font-bold rounded-xl shadow-md mt-2 transition-all active:scale-[0.98]"
+                  className="w-full h-14 bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800 text-white font-bold rounded-xl shadow-md mt-2 transition-all active:scale-[0.98]"
                   disabled={withdraw.isPending}
                   data-testid="button-confirm-withdraw"
                 >
@@ -141,7 +174,10 @@ export default function Withdraw() {
         </Card>
 
         <div>
-          <h3 className="text-base font-extrabold text-gray-800 mb-3 px-1">Historique des retraits</h3>
+          <h3 className="text-base font-extrabold text-gray-800 mb-3 px-1 flex items-center gap-2">
+            <ArrowDownLeft className="w-4 h-4 text-amber-600" />
+            Historique des retraits
+          </h3>
           <div className="space-y-2">
             {withdrawals.length === 0 ? (
               <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-base border border-gray-100">
@@ -149,9 +185,9 @@ export default function Withdraw() {
               </div>
             ) : (
               withdrawals.map((tx: Transaction) => (
-                <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center" data-testid={`withdrawal-${tx.id}`}>
+                <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm" data-testid={`withdrawal-${tx.id}`}>
                   <div className="flex items-center gap-3">
-                    <div className="bg-red-50 p-2 rounded-xl text-red-500">
+                    <div className="bg-amber-50 p-2.5 rounded-xl text-amber-600">
                       <ArrowDownLeft className="w-4 h-4" />
                     </div>
                     <div>

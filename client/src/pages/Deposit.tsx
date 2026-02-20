@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Wallet, CheckCircle2, ChevronRight, Info, ExternalLink, ArrowLeft } from "lucide-react";
+import { Loader2, Wallet, CheckCircle2, ChevronRight, Info, ExternalLink, ArrowLeft, Sprout } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import { Setting } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { COUNTRIES, getPaymentMethodsForCountry, getFlagForCountry, type Country } from "@/lib/countries";
+import depositBg from "@/assets/images/deposit-farming.png";
 
 const AMOUNTS = [3000, 5000, 10000, 20000, 50000, 100000];
 
@@ -97,17 +98,21 @@ export default function Deposit() {
   if (step === 'payment') {
     return (
       <div className="min-h-screen bg-gray-50 pb-28">
-        <div className="bg-gradient-to-br from-green-700 to-emerald-800 px-5 pt-12 pb-8 rounded-b-[2rem]">
-          <h1 className="text-2xl font-extrabold text-white text-center" data-testid="text-payment-title">Effectuer le Paiement</h1>
-          <p className="text-green-200/60 text-sm text-center mt-1">Suivez les instructions ci-dessous</p>
+        <div className="relative overflow-hidden rounded-b-[2rem]">
+          <img src={depositBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-green-900/80 via-green-800/70 to-emerald-900/90" />
+          <div className="relative px-5 pt-12 pb-10 text-center">
+            <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+              <CheckCircle2 className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-white" data-testid="text-payment-title">Effectuer le Paiement</h1>
+            <p className="text-green-100/80 text-sm mt-1">Suivez les instructions ci-dessous</p>
+          </div>
         </div>
 
         <div className="px-5 -mt-6 max-w-2xl mx-auto">
           <Card className="border-0 shadow-lg rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-green-50 border-b border-green-100/50 p-6 text-center">
-              <div className="bg-green-100 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 className="w-7 h-7 text-green-600" />
-              </div>
               <CardTitle className="text-lg font-extrabold text-gray-900">Demande enregistrée</CardTitle>
               <CardDescription>Dépôt de <span className="font-extrabold text-primary">{submittedValues?.amount?.toLocaleString()} FCFA</span></CardDescription>
             </CardHeader>
@@ -165,8 +170,13 @@ export default function Deposit() {
   if (step === 'summary' && submittedValues) {
     return (
       <div className="min-h-screen bg-gray-50 pb-28">
-        <div className="bg-gradient-to-br from-green-700 to-emerald-800 px-5 pt-12 pb-8 rounded-b-[2rem]">
-          <h1 className="text-2xl font-extrabold text-white text-center">Récapitulatif</h1>
+        <div className="relative overflow-hidden rounded-b-[2rem]">
+          <img src={depositBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-green-900/80 via-green-800/70 to-emerald-900/90" />
+          <div className="relative px-5 pt-12 pb-10 text-center">
+            <h1 className="text-2xl font-extrabold text-white">Récapitulatif</h1>
+            <p className="text-green-100/80 text-sm mt-1">Vérifiez avant de confirmer</p>
+          </div>
         </div>
 
         <div className="px-5 -mt-6 max-w-2xl mx-auto">
@@ -227,9 +237,27 @@ export default function Deposit() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
-      <div className="bg-gradient-to-br from-green-700 to-emerald-800 px-5 pt-12 pb-8 rounded-b-[2rem]">
-        <h1 className="text-2xl font-extrabold text-white">Effectuer un Dépôt</h1>
-        <p className="text-green-200/60 text-sm mt-1">Rechargez votre compte en toute sécurité</p>
+      <div className="relative overflow-hidden rounded-b-[2rem]">
+        <img src={depositBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-green-900/80 via-green-800/70 to-emerald-900/90" />
+        <div className="relative px-5 pt-12 pb-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-white/20 backdrop-blur-sm w-11 h-11 rounded-xl flex items-center justify-center">
+              <Sprout className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-white">Effectuer un Dépôt</h1>
+              <p className="text-green-100/80 text-sm">Investissez dans l'agriculture</p>
+            </div>
+          </div>
+          <div className="mt-4 bg-white/15 backdrop-blur-sm rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-green-100/70 text-xs font-semibold uppercase tracking-wider">Solde actuel</p>
+              <p className="text-white text-2xl font-extrabold">{user?.balance?.toLocaleString()} <span className="text-base font-bold text-green-200/80">FCFA</span></p>
+            </div>
+            <Wallet className="w-8 h-8 text-green-200/50" />
+          </div>
+        </div>
       </div>
 
       <div className="px-5 -mt-6 space-y-4 max-w-2xl mx-auto">
@@ -323,7 +351,9 @@ export default function Deposit() {
 
             <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
               <CardHeader className="px-5 py-4 border-b border-gray-50">
-                <CardTitle className="text-base font-extrabold text-gray-800">Montant & Identité</CardTitle>
+                <CardTitle className="text-base font-extrabold text-gray-800 flex items-center gap-2">
+                  <span className="text-lg">💰</span> Montant & Identité
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-5">
                 <div className="space-y-3">
