@@ -42,34 +42,34 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950 flex flex-col" data-testid="login-page">
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-8">
-        <div className="w-full max-w-md space-y-6">
+        <div className="w-full max-w-md lg:max-w-lg space-y-6">
           <div className="text-center space-y-3 mb-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 mb-2">
-              <span className="text-3xl">🌱</span>
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 mb-2">
+              <span className="text-4xl">🌱</span>
             </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">GreenHarvest</h1>
-            <p className="text-green-300/80 text-sm font-medium">Investissement Agricole Durable</p>
+            <h1 className="text-4xl font-black text-white tracking-tight">GreenHarvest</h1>
+            <p className="text-green-300/80 text-base font-medium">Investissement Agricole Durable</p>
           </div>
 
           {!selectedCountry ? (
             <div className="space-y-4 animate-in fade-in duration-300">
               <div className="text-center mb-2">
-                <h2 className="text-lg font-bold text-white mb-1">Choisissez votre pays</h2>
-                <p className="text-green-300/60 text-xs">Sélectionnez votre pays pour continuer</p>
+                <h2 className="text-xl font-bold text-white mb-1">Choisissez votre pays</h2>
+                <p className="text-green-300/60 text-sm">Sélectionnez votre pays pour continuer</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 {COUNTRIES.map((country) => (
                   <button
                     key={country.code}
                     type="button"
                     onClick={() => setSelectedCountry(country)}
-                    className="bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all active:scale-95 group"
+                    className="bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 rounded-2xl p-5 flex flex-col items-center gap-2 transition-all active:scale-95 group"
                     data-testid={`country-select-${country.code}`}
                   >
-                    <span className="text-4xl group-hover:scale-110 transition-transform">{country.flag}</span>
-                    <span className="text-white text-xs font-bold">{country.name}</span>
-                    <span className="text-green-300/50 text-[10px]">{country.phonePrefix}</span>
+                    <span className="text-5xl group-hover:scale-110 transition-transform">{country.flag}</span>
+                    <span className="text-white text-sm font-bold">{country.name}</span>
+                    <span className="text-green-300/50 text-xs">{country.phonePrefix}</span>
                   </button>
                 ))}
               </div>
@@ -79,34 +79,34 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setSelectedCountry(null)}
-                className="flex items-center gap-3 w-full bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 hover:bg-white/15 transition-all"
+                className="flex items-center gap-3 w-full bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-5 hover:bg-white/15 transition-all"
                 data-testid="button-change-country"
               >
-                <span className="text-3xl">{selectedCountry.flag}</span>
+                <span className="text-4xl">{selectedCountry.flag}</span>
                 <div className="flex-1 text-left">
-                  <p className="text-white font-bold text-sm">{selectedCountry.name}</p>
-                  <p className="text-green-300/60 text-xs">{selectedCountry.phonePrefix}</p>
+                  <p className="text-white font-bold text-base">{selectedCountry.name}</p>
+                  <p className="text-green-300/60 text-sm">{selectedCountry.phonePrefix}</p>
                 </div>
-                <span className="text-green-300/40 text-xs font-medium">Changer</span>
+                <span className="text-green-300/40 text-sm font-medium">Changer</span>
               </button>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 space-y-5">
+              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-7 border border-white/10 space-y-5">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <FormField
                       control={form.control}
                       name="phoneNumber"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Téléphone</FormLabel>
+                          <FormLabel className="text-green-200/80 text-sm font-bold uppercase tracking-wider">Téléphone</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400/60" />
                               <Input
                                 type="tel"
                                 placeholder={`${selectedCountry.phonePrefix} ...`}
                                 {...field}
-                                className="pl-11 h-13 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40 text-base"
+                                className="pl-11 h-14 rounded-xl bg-white/10 border-white/10 text-lg text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
                                 data-testid="input-phone"
                               />
                             </div>
@@ -121,15 +121,15 @@ export default function Login() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Mot de passe</FormLabel>
+                          <FormLabel className="text-green-200/80 text-sm font-bold uppercase tracking-wider">Mot de passe</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400/60" />
                               <Input
                                 type="password"
                                 placeholder="••••••••"
                                 {...field}
-                                className="pl-11 h-13 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40 text-base"
+                                className="pl-11 h-14 rounded-xl bg-white/10 border-white/10 text-lg text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
                                 data-testid="input-password"
                               />
                             </div>
@@ -141,7 +141,7 @@ export default function Login() {
 
                     <Button
                       type="submit"
-                      className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl text-base font-bold shadow-lg shadow-green-900/40 mt-2 transition-all active:scale-[0.98]"
+                      className="w-full h-[56px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl text-lg font-bold shadow-lg shadow-green-900/40 mt-2 transition-all active:scale-[0.98]"
                       disabled={login.isPending}
                       data-testid="button-login"
                     >
@@ -160,7 +160,7 @@ export default function Login() {
 
               <div className="text-center pt-2">
                 <Link href="/">
-                  <span className="text-sm text-green-300/60 hover:text-green-200 cursor-pointer transition-colors" data-testid="link-register">
+                  <span className="text-base text-green-300/60 hover:text-green-200 cursor-pointer transition-colors" data-testid="link-register">
                     Pas encore de compte ? <strong className="text-green-300">Inscrivez-vous</strong>
                   </span>
                 </Link>

@@ -48,21 +48,21 @@ export default function Withdraw() {
   const withdrawals = transactions?.filter((t: Transaction) => t.type === 'withdrawal') || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24" data-testid="withdraw-page">
+    <div className="min-h-screen bg-gray-50 pb-28" data-testid="withdraw-page">
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 px-5 pt-12 pb-8 rounded-b-[2rem]">
-        <h1 className="text-xl font-extrabold text-white">Retrait Sécurisé</h1>
-        <p className="text-gray-400 text-xs mt-1">Transférez vos gains vers votre mobile money</p>
+        <h1 className="text-2xl font-extrabold text-white">Retrait Sécurisé</h1>
+        <p className="text-gray-400 text-sm mt-1">Transférez vos gains vers votre mobile money</p>
       </div>
 
-      <div className="px-5 -mt-6 space-y-5">
+      <div className="px-5 -mt-6 space-y-5 max-w-2xl mx-auto">
         <Card className="border-0 shadow-sm rounded-2xl">
           <CardHeader className="px-5 py-4 border-b border-gray-50">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-sm font-extrabold text-gray-800 flex items-center gap-2">
+              <CardTitle className="text-base font-extrabold text-gray-800 flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-primary" />
                 Demande de Retrait
               </CardTitle>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 font-bold text-xs">
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 font-bold text-sm">
                 {user?.balance?.toLocaleString()} FCFA
               </Badge>
             </div>
@@ -75,9 +75,9 @@ export default function Withdraw() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-gray-500">Montant à retirer (FCFA)</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-gray-500">Montant à retirer (FCFA)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="rounded-xl h-12 bg-gray-50 border-gray-100 font-bold text-base" data-testid="input-withdraw-amount" />
+                        <Input type="number" {...field} className="rounded-xl h-13 bg-gray-50 border-gray-100 font-bold text-base" data-testid="input-withdraw-amount" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -90,9 +90,9 @@ export default function Withdraw() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-gray-500">Prénom</FormLabel>
+                        <FormLabel className="text-sm font-semibold text-gray-500">Prénom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-firstname" />
+                          <Input {...field} className="rounded-xl h-12 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-firstname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -103,9 +103,9 @@ export default function Withdraw() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-gray-500">Nom</FormLabel>
+                        <FormLabel className="text-sm font-semibold text-gray-500">Nom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-lastname" />
+                          <Input {...field} className="rounded-xl h-12 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-lastname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -118,9 +118,9 @@ export default function Withdraw() {
                   name="mobileNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-gray-500">Numéro Mobile Money</FormLabel>
+                      <FormLabel className="text-sm font-semibold text-gray-500">Numéro Mobile Money</FormLabel>
                       <FormControl>
-                        <Input type="tel" {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-mobile" />
+                        <Input type="tel" {...field} className="rounded-xl h-12 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-mobile" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -141,10 +141,10 @@ export default function Withdraw() {
         </Card>
 
         <div>
-          <h3 className="text-sm font-extrabold text-gray-800 mb-3 px-1">Historique des retraits</h3>
+          <h3 className="text-base font-extrabold text-gray-800 mb-3 px-1">Historique des retraits</h3>
           <div className="space-y-2">
             {withdrawals.length === 0 ? (
-              <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm border border-gray-100">
+              <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-base border border-gray-100">
                 Aucun retrait effectué
               </div>
             ) : (
@@ -155,13 +155,13 @@ export default function Withdraw() {
                       <ArrowDownLeft className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-gray-800">Retrait</p>
-                      <p className="text-[10px] text-gray-400">{format(new Date(tx.createdAt!), 'dd/MM/yyyy HH:mm')}</p>
+                      <p className="font-bold text-base text-gray-800">Retrait</p>
+                      <p className="text-xs text-gray-400">{format(new Date(tx.createdAt!), 'dd/MM/yyyy HH:mm')}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-sm text-gray-800">-{tx.amount.toLocaleString()} F</p>
-                    <Badge variant="secondary" className={`text-[10px] ${
+                    <p className="font-bold text-base text-gray-800">-{tx.amount.toLocaleString()} F</p>
+                    <Badge variant="secondary" className={`text-xs ${
                       tx.status === 'completed' ? 'bg-green-50 text-green-700' :
                       tx.status === 'pending' ? 'bg-amber-50 text-amber-700' :
                       'bg-red-50 text-red-700'
