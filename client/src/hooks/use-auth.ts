@@ -24,10 +24,17 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Échec de la connexion");
+        let message = "Échec de la connexion";
+        try {
+          const error = await res.json();
+          message = error.message || message;
+        } catch {
+          // response was not JSON
+        }
+        throw new Error(message);
       }
       return await res.json();
     },
@@ -54,10 +61,17 @@ export function useAuth() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Échec de l'inscription");
+        let message = "Échec de l'inscription";
+        try {
+          const error = await res.json();
+          message = error.message || message;
+        } catch {
+          // response was not JSON
+        }
+        throw new Error(message);
       }
       return await res.json();
     },

@@ -85,7 +85,7 @@ export function setupAuth(app: Express) {
     try {
       const existingUser = await storage.getUserByPhone(req.body.phoneNumber);
       if (existingUser) {
-        return res.status(400).send("Phone number already registered");
+        return res.status(400).json({ message: "Ce numéro de téléphone est déjà enregistré" });
       }
 
       const hashedPassword = await hashPassword(req.body.password);
@@ -112,8 +112,17 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Identifiants invalides" });
+      }
+      req.login(user, (loginErr) => {
+        if (loginErr) return next(loginErr);
+        res.status(200).json(user);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -124,11 +133,11 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non authentifié" });
     const user = await storage.getUser(req.user!.id);
     if (user?.isBanned) {
       req.logout(() => {});
-      return res.status(403).send("Your account has been banned.");
+      return res.status(403).json({ message: "Votre compte a été bloqué." });
     }
     res.json(user);
   });

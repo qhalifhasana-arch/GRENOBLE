@@ -7,7 +7,7 @@ import { z } from "zod";
 
 function isAdmin(req: any, res: any, next: any) {
   if (!req.isAuthenticated() || !req.user.isAdmin) {
-    return res.status(403).send("Unauthorized");
+    return res.status(403).json({ message: "Non autorisé" });
   }
   next();
 }
@@ -90,17 +90,17 @@ export async function registerRoutes(
   });
 
   app.post(api.products.invest.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const { productId, userId, bypassBalance } = req.body;
     
     const targetUserId = userId || req.user!.id;
     const user = await storage.getUser(targetUserId);
     const product = await storage.getProduct(productId);
     
-    if (!product) return res.status(404).send("Product not found");
+    if (!product) return res.status(404).json({ message: "Produit non trouvé" });
     
     if (!bypassBalance || !req.user!.isAdmin) {
-      if (user!.balance < product.price) return res.status(400).send("Solde insuffisant");
+      if (user!.balance < product.price) return res.status(400).json({ message: "Solde insuffisant" });
       await storage.updateUser(user!.id, { balance: user!.balance - product.price });
       
       await storage.createTransaction({
@@ -125,7 +125,7 @@ export async function registerRoutes(
 
   // Transactions
   app.post(api.transactions.deposit.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const transaction = await storage.createTransaction({
       userId: req.user!.id,
       type: "deposit",
@@ -139,11 +139,11 @@ export async function registerRoutes(
   });
 
   app.post(api.transactions.withdraw.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const user = await storage.getUser(req.user!.id);
     
-    if (user!.withdrawalBlocked) return res.status(403).send("Withdrawal blocked");
-    if (user!.balance < req.body.amount) return res.status(400).send("Insufficient balance");
+    if (user!.withdrawalBlocked) return res.status(403).json({ message: "Retraits bloqués" });
+    if (user!.balance < req.body.amount) return res.status(400).json({ message: "Solde insuffisant" });
 
     // Deduct balance immediately
     await storage.updateUser(user!.id, { balance: user!.balance - req.body.amount });
@@ -160,19 +160,19 @@ export async function registerRoutes(
   });
 
   app.get(api.transactions.list.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const transactions = await storage.getTransactionsByUser(req.user!.id);
     res.json(transactions);
   });
 
   app.get(api.investments.list.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const investments = await storage.getInvestmentsByUser(req.user!.id);
     res.json(investments);
   });
 
   app.get(api.team.stats.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     
     const level1 = await storage.getReferrals(req.user!.id);
     
@@ -228,14 +228,14 @@ export async function registerRoutes(
 
   // Public settings (payment_link, telegram links - accessible to all authenticated users)
   app.get(api.settings.public.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const allSettings = await storage.getSettings();
     res.json(allSettings);
   });
 
   // User payment info
   app.put(api.profile.updatePayment.path, async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Non autorisé" });
     const { paymentPhone, paymentMethod, paymentName } = req.body;
     const updated = await storage.updateUser(req.user!.id, {
       paymentPhone,
