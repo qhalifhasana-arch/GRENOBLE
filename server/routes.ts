@@ -99,23 +99,26 @@ export async function registerRoutes(
     
     if (!product) return res.status(404).send("Product not found");
     
-    // Admin bypass for manual VIP assignment
     if (!bypassBalance || !req.user!.isAdmin) {
       if (user!.balance < product.price) return res.status(400).send("Solde insuffisant");
       await storage.updateUser(user!.id, { balance: user!.balance - product.price });
       
-      // Create transaction record for the purchase
       await storage.createTransaction({
         userId: user!.id,
         type: "withdrawal",
         amount: product.price,
         status: "completed",
-        method: "VIP Purchase: " + product.name
+        method: "Achat " + product.name
       });
     }
     
-    // Create investment
     const investment = await storage.createInvestment(user!.id, productId);
+    
+    try {
+      await storage.processReferralCommission(user!.id, product.price, product.name);
+    } catch (error) {
+      console.error("Referral commission error:", error);
+    }
     
     res.status(201).json(investment);
   });
@@ -168,23 +171,58 @@ export async function registerRoutes(
     res.json(investments);
   });
 
-  // Team
   app.get(api.team.stats.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
-    // Mocking stats for now, complex recursive queries needed for real 3-level depth
-    const referrals = await storage.getReferrals(req.user!.id);
+    
+    const level1 = await storage.getReferrals(req.user!.id);
+    
+    let level2: any[] = [];
+    for (const l1 of level1) {
+      const l2refs = await storage.getReferrals(l1.id);
+      level2 = level2.concat(l2refs);
+    }
+    
+    let level3: any[] = [];
+    for (const l2 of level2) {
+      const l3refs = await storage.getReferrals(l2.id);
+      level3 = level3.concat(l3refs);
+    }
+    
+    const commissionTxs = await storage.getTransactionsByUser(req.user!.id);
+    const referralTxs = commissionTxs.filter(t => t.type === "referral_reward" && t.status === "completed");
+    
+    let level1Earnings = 0;
+    let level2Earnings = 0;
+    let level3Earnings = 0;
+    
+    for (const tx of referralTxs) {
+      const method = tx.method || "";
+      if (method.includes("Niveau 1")) {
+        level1Earnings += tx.amount;
+      } else if (method.includes("Niveau 2")) {
+        level2Earnings += tx.amount;
+      } else if (method.includes("Niveau 3")) {
+        level3Earnings += tx.amount;
+      } else {
+        level1Earnings += tx.amount;
+      }
+    }
+    
+    const totalCommission = level1Earnings + level2Earnings + level3Earnings;
+    const host = req.get('host') || '';
+    const protocol = host.includes('replit') ? 'https' : req.protocol;
     
     res.json({
-      referralLink: `${req.protocol}://${req.get('host')}/register?ref=${req.user!.referralCode}`,
+      referralLink: `${protocol}://${host}/register?ref=${req.user!.referralCode}`,
       referralCode: req.user!.referralCode,
-      totalReferrals: referrals.length,
-      totalCommission: 0, // Calculate this
-      level1: referrals.length,
-      level2: 0,
-      level3: 0,
-      level1Earnings: 0,
-      level2Earnings: 0,
-      level3Earnings: 0,
+      totalReferrals: level1.length + level2.length + level3.length,
+      totalCommission,
+      level1: level1.length,
+      level2: level2.length,
+      level3: level3.length,
+      level1Earnings,
+      level2Earnings,
+      level3Earnings,
     });
   });
 
@@ -213,16 +251,16 @@ export async function registerRoutes(
     res.json(stats);
   });
 
-  // Background task for daily earnings
-  setInterval(async () => {
+  const runDailyEarnings = async () => {
     try {
-      if ('processDailyEarnings' in storage) {
-        await (storage as any).processDailyEarnings();
-      }
+      await storage.processDailyEarnings();
     } catch (error) {
       console.error("Daily earnings processing failed:", error);
     }
-  }, 10 * 60 * 1000); // Check every 10 minutes
+  };
+
+  setTimeout(runDailyEarnings, 5000);
+  setInterval(runDailyEarnings, 5 * 60 * 1000);
 
   app.get(api.admin.users.path, isAdmin, async (req, res) => {
     const users = await storage.getAllUsers();
@@ -248,25 +286,8 @@ export async function registerRoutes(
     
     const transaction = await storage.updateTransactionStatus(Number(id), status);
     
-    // Logic for referral commissions if deposit validated
     if (status === 'completed' && transaction.type === 'deposit') {
        const user = await storage.getUser(transaction.userId);
-       // Simple Level 1 Commission (27%)
-       if (user?.referrerId) {
-         const referrer = await storage.getUser(user.referrerId);
-         if (referrer) {
-           const commission = Math.floor(transaction.amount * 0.27);
-           await storage.updateUser(referrer.id, { balance: referrer.balance + commission });
-           await storage.createTransaction({
-             userId: referrer.id,
-             type: "referral_reward",
-             amount: commission,
-             status: "completed",
-             method: "system"
-           });
-         }
-       }
-       // Update user balance for deposit
        if (user) {
          await storage.updateUser(user.id, { balance: user.balance + transaction.amount });
        }

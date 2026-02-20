@@ -34,6 +34,10 @@ export interface IStorage {
   // Stats
   getAdminStats(): Promise<{ registrationsToday: number; depositsToday: number }>;
   getUserStats(userId: number): Promise<any>;
+  
+  // Background processes
+  processDailyEarnings(): Promise<void>;
+  processReferralCommission(buyerId: number, purchaseAmount: number, productName: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -174,6 +178,7 @@ export class DatabaseStorage implements IStorage {
     .where(eq(investments.status, "active"));
 
     const now = new Date();
+    let processed = 0;
 
     for (const item of activeInvestments) {
       const { investment, product } = item;
@@ -182,7 +187,7 @@ export class DatabaseStorage implements IStorage {
 
       if (now >= expiryDate) {
         await db.update(investments)
-          .set({ status: "expired" })
+          .set({ status: "completed" })
           .where(eq(investments.id, investment.id));
         continue;
       }
@@ -193,10 +198,13 @@ export class DatabaseStorage implements IStorage {
       if (hoursSinceLast >= 24) {
         const daysToCredit = Math.floor(hoursSinceLast / 24);
         const totalEarning = product.dailyRate * daysToCredit;
+        const newLastCollection = new Date(lastCollection.getTime() + daysToCredit * 24 * 60 * 60 * 1000);
 
-        await db.transaction(async (tx) => {
-          const [user] = await tx.select().from(users).where(eq(users.id, investment.userId));
-          if (user) {
+        try {
+          await db.transaction(async (tx) => {
+            const [user] = await tx.select().from(users).where(eq(users.id, investment.userId));
+            if (!user) return;
+
             await tx.update(users)
               .set({ balance: user.balance + totalEarning })
               .where(eq(users.id, user.id));
@@ -206,15 +214,66 @@ export class DatabaseStorage implements IStorage {
               type: "daily_earning",
               amount: totalEarning,
               status: "completed",
-              method: `Earning from ${product.name}`,
+              method: `${product.name} (${daysToCredit}j)`,
             });
 
             await tx.update(investments)
-              .set({ lastCollectionDate: new Date(lastCollection.getTime() + daysToCredit * 24 * 60 * 60 * 1000) })
+              .set({ lastCollectionDate: newLastCollection })
               .where(eq(investments.id, investment.id));
-          }
-        });
+          });
+          processed++;
+        } catch (error) {
+          console.error(`Failed to process earning for investment ${investment.id}:`, error);
+        }
       }
+    }
+
+    if (processed > 0) {
+      console.log(`Daily earnings: ${processed} investments credited at ${now.toISOString()}`);
+    }
+  }
+
+  async processReferralCommission(buyerId: number, purchaseAmount: number, productName: string): Promise<void> {
+    const commissionRates = [
+      { level: 1, rate: 0.25 },
+      { level: 2, rate: 0.02 },
+      { level: 3, rate: 0.03 },
+    ];
+
+    let currentUserId: number | null = buyerId;
+
+    for (const { level, rate } of commissionRates) {
+      if (!currentUserId) break;
+
+      const [currentUser] = await db.select().from(users).where(eq(users.id, currentUserId));
+      if (!currentUser || !currentUser.referrerId) break;
+
+      const referrerId = currentUser.referrerId;
+      const [referrer] = await db.select().from(users).where(eq(users.id, referrerId));
+      if (!referrer) break;
+
+      const commission = Math.floor(purchaseAmount * rate);
+      if (commission <= 0) {
+        currentUserId = referrerId;
+        continue;
+      }
+
+      await db.transaction(async (tx) => {
+        await tx.update(users)
+          .set({ balance: referrer.balance + commission })
+          .where(eq(users.id, referrer.id));
+
+        await tx.insert(transactions).values({
+          userId: referrer.id,
+          type: "referral_reward",
+          amount: commission,
+          status: "completed",
+          method: `Niveau ${level} - ${productName}`,
+        });
+      });
+
+      console.log(`Commission L${level}: ${commission} FCFA to user ${referrer.id} (${referrer.firstName})`);
+      currentUserId = referrerId;
     }
   }
 

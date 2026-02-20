@@ -58,6 +58,21 @@ This ensures type safety across the full stack.
 - Referral codes link new users to referrers
 - Session-based authentication with secure cookie handling
 - Admin users have elevated privileges for user/transaction management
+- Admin login: phone "99999992", password "admin123"
+
+### Referral Commission System
+- Triggered automatically when any user purchases a VIP product
+- 3-level commission chain: Level 1 (25%), Level 2 (2%), Level 3 (3%)
+- Commission is calculated on the VIP purchase price
+- `processReferralCommission()` in `server/storage.ts` handles the chain traversal
+- Commission transactions are recorded with method "Niveau X - ProductName"
+
+### Daily VIP Earnings
+- Background task runs every 5 minutes via `setInterval` in `server/routes.ts`
+- `processDailyEarnings()` in `server/storage.ts` checks all active investments
+- Credits daily rate to user balance every 24 hours (based on `lastCollectionDate`)
+- Investments expire after their configured duration (default 60 days)
+- Each credit creates a `daily_earning` transaction record
 
 ## External Dependencies
 
