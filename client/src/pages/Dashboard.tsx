@@ -9,6 +9,7 @@ import { api } from "@shared/routes";
 import { Card, CardContent } from "@/components/ui/card";
 import { getFlagForCountry } from "@/lib/countries";
 import seedlingImg from "@/assets/images/seedling-hands.jpg";
+import agricultureHero from "@/assets/images/agriculture-hero.png";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -27,36 +28,37 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28" data-testid="dashboard-page">
-      <div className="relative bg-gradient-to-br from-green-800 via-green-700 to-emerald-800 px-6 pt-12 pb-20 overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-12 -mt-12 opacity-[0.07]">
-          <Sprout className="w-56 h-56 text-white" />
-        </div>
-        <div className="absolute bottom-0 left-0 -ml-8 -mb-8 opacity-[0.05]">
-          <TrendingUp className="w-40 h-40 text-white" />
-        </div>
+      <div className="relative px-6 pt-12 pb-20 overflow-hidden">
+        <img
+          src={agricultureHero}
+          alt="Champs agricoles GreenHarvest"
+          className="absolute inset-0 w-full h-full object-cover"
+          data-testid="img-agriculture-hero"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-green-900/80 via-green-800/70 to-green-900/90" />
 
         <div className="relative z-10 max-w-2xl mx-auto">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <p className="text-green-300/70 text-sm font-semibold uppercase tracking-widest mb-1">Bienvenue</p>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              <p className="text-green-200/80 text-sm font-semibold uppercase tracking-widest mb-1">Bienvenue</p>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-lg">
                 {user?.firstName} {user?.lastName}
               </h1>
             </div>
-            <div className="bg-white/15 backdrop-blur-sm p-3 rounded-2xl border border-white/20" data-testid="country-flag">
+            <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/25 shadow-lg" data-testid="country-flag">
               <span className="text-3xl">{countryFlag}</span>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/15">
-            <p className="text-green-200/60 text-xs font-bold uppercase tracking-widest mb-2">Capital Disponible</p>
-            <h2 className="text-5xl font-black text-white tracking-tight mb-1" data-testid="text-balance">
-              {user?.balance?.toLocaleString()} <span className="text-lg font-semibold text-green-200/70">FCFA</span>
+          <div className="bg-white/15 backdrop-blur-md rounded-3xl p-7 border border-white/20 shadow-xl">
+            <p className="text-white/70 text-xs font-bold uppercase tracking-[0.2em] mb-3">Capital Disponible</p>
+            <h2 className="text-[3.2rem] leading-none font-black text-white tracking-tight mb-1 drop-shadow-lg" data-testid="text-balance">
+              {user?.balance?.toLocaleString()} <span className="text-xl font-bold text-green-200/80">FCFA</span>
             </h2>
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex items-center gap-1 bg-green-400/20 rounded-full px-3 py-1">
-                <TrendingUp className="w-3 h-3 text-green-300" />
-                <span className="text-green-200 text-xs font-bold">+{dailyEarnings.toLocaleString()} FCFA/jour</span>
+            <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 border border-white/10">
+                <TrendingUp className="w-3.5 h-3.5 text-green-300" />
+                <span className="text-white text-sm font-bold">+{dailyEarnings.toLocaleString()} FCFA/jour</span>
               </div>
             </div>
           </div>
