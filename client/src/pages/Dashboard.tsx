@@ -1,22 +1,18 @@
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
-import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
-import { Sprout, TrendingUp, Wallet, ArrowRight, Clock, CalendarDays, Loader2, MessageCircle, Send } from "lucide-react";
+import { Sprout, TrendingUp, Wallet, ArrowRight, Send, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Investment, Product, Setting } from "@shared/schema";
 import { api } from "@shared/routes";
-import { format, addDays } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import farmLandscape from "@assets/stock_images/lush_green_corn_fiel_39836de0.jpg";
+import { getFlagForCountry } from "@/lib/countries";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
-  const { data: investments, isLoading: loadingInvestments } = useQuery<(Investment & { product: Product })[]>({
+
+  const { data: investments } = useQuery<(Investment & { product: Product })[]>({
     queryKey: [api.investments.list.path],
   });
 
@@ -25,108 +21,116 @@ export default function Dashboard() {
   });
 
   const dailyEarnings = investments?.reduce((sum, inv) => sum + inv.product.dailyRate, 0) || 0;
-  const tgChannel = settings?.find(s => s.key === 'telegram_channel')?.value || "#";
-  const tgGroup = settings?.find(s => s.key === 'telegram_group')?.value || "#";
+  const activeCount = investments?.filter((inv) => inv.status === "active").length || 0;
+  const countryFlag = getFlagForCountry(user?.country || "");
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Dynamic Header with Agriculture Image */}
-      <div className="relative h-80 rounded-b-[3rem] overflow-hidden shadow-2xl">
-        <img 
-          src={farmLandscape} 
-          className="absolute inset-0 w-full h-full object-cover" 
-          alt="Agriculture" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-green-900/90 via-green-900/40 to-transparent" />
-        
-        <div className="absolute inset-0 p-6 flex flex-col justify-between text-white">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <p className="text-green-200 text-xs font-black uppercase tracking-widest">Compte Investisseur</p>
-              <h1 className="text-2xl font-black font-display tracking-tight leading-none">
+    <div className="min-h-screen bg-gray-50 pb-24" data-testid="dashboard-page">
+      <div className="relative bg-gradient-to-br from-green-800 via-green-700 to-emerald-800 px-5 pt-12 pb-16 overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-12 -mt-12 opacity-[0.07]">
+          <Sprout className="w-56 h-56 text-white" />
+        </div>
+        <div className="absolute bottom-0 left-0 -ml-8 -mb-8 opacity-[0.05]">
+          <TrendingUp className="w-40 h-40 text-white" />
+        </div>
+
+        <div className="relative z-10">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <p className="text-green-300/70 text-xs font-semibold uppercase tracking-widest mb-1">Bienvenue</p>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">
                 {user?.firstName} {user?.lastName}
               </h1>
             </div>
-            <div className="bg-white/20 p-2 rounded-2xl backdrop-blur-md border border-white/20">
-              <span className="text-2xl">🇹🇬</span>
+            <div className="bg-white/15 backdrop-blur-sm p-2.5 rounded-2xl border border-white/20" data-testid="country-flag">
+              <span className="text-2xl">{countryFlag}</span>
             </div>
           </div>
-          
-          <div className="flex flex-col items-center pb-4">
-            <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Capital Disponible</p>
-            <h2 className="text-5xl font-black tracking-tighter font-display">
-              {user?.balance?.toLocaleString()} <span className="text-xl font-bold opacity-80">FCFA</span>
+
+          <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/15">
+            <p className="text-green-200/60 text-[10px] font-bold uppercase tracking-widest mb-2">Capital Disponible</p>
+            <h2 className="text-4xl font-black text-white tracking-tight mb-1" data-testid="text-balance">
+              {user?.balance?.toLocaleString()} <span className="text-lg font-semibold text-green-200/70">FCFA</span>
             </h2>
+            <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-1 bg-green-400/20 rounded-full px-3 py-1">
+                <TrendingUp className="w-3 h-3 text-green-300" />
+                <span className="text-green-200 text-[10px] font-bold">+{dailyEarnings.toLocaleString()} FCFA/jour</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-10 relative z-30 space-y-6">
-        {/* Main Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <Link href="/deposit" className="w-full">
-            <Button className="w-full h-20 bg-white text-primary hover:bg-primary hover:text-white transition-all font-black rounded-[2rem] text-xl shadow-xl border-0 group">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-widest opacity-60 mb-1 group-hover:text-white/80">Recharger</span>
-                Dépôt
+      <div className="px-5 -mt-8 relative z-10 space-y-5">
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/deposit" className="block">
+            <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100/80 flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-deposit">
+              <div className="bg-green-100 p-3 rounded-xl text-green-700">
+                <ArrowUpRight className="w-5 h-5" />
               </div>
-            </Button>
+              <div>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Recharger</p>
+                <p className="text-base font-extrabold text-gray-900">Dépôt</p>
+              </div>
+            </div>
           </Link>
-          <Link href="/withdraw" className="w-full">
-             <Button className="w-full h-20 bg-amber-400 text-amber-950 hover:bg-amber-500 font-black rounded-[2rem] text-xl shadow-xl border-0">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] uppercase tracking-widest opacity-60 mb-1">Encaisser</span>
-                Retrait
+          <Link href="/withdraw" className="block">
+            <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100/80 flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-withdraw">
+              <div className="bg-amber-100 p-3 rounded-xl text-amber-700">
+                <ArrowDownLeft className="w-5 h-5" />
               </div>
-            </Button>
+              <div>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Encaisser</p>
+                <p className="text-base font-extrabold text-gray-900">Retrait</p>
+              </div>
+            </div>
           </Link>
         </div>
 
-        {/* Financial Summary */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="border-0 shadow-lg rounded-3xl bg-white overflow-hidden group hover-elevate transition-all">
-            <CardContent className="p-5">
-              <div className="bg-green-100 w-10 h-10 rounded-xl flex items-center justify-center text-green-600 mb-3 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                <TrendingUp className="w-5 h-5" />
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="border-0 shadow-sm rounded-2xl bg-white overflow-hidden group card-hover">
+            <CardContent className="p-4">
+              <div className="bg-emerald-50 w-9 h-9 rounded-xl flex items-center justify-center text-emerald-600 mb-3">
+                <TrendingUp className="w-4 h-4" />
               </div>
-              <p className="text-[9px] uppercase tracking-widest font-black text-muted-foreground mb-1">Revenu/Jour</p>
-              <p className="text-lg font-black text-slate-900">{dailyEarnings.toLocaleString()} FCFA</p>
+              <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1">Revenu/Jour</p>
+              <p className="text-base font-extrabold text-gray-900" data-testid="text-daily-earnings">{dailyEarnings.toLocaleString()} F</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-lg rounded-3xl bg-white overflow-hidden group hover-elevate transition-all">
-            <CardContent className="p-5">
-              <div className="bg-amber-100 w-10 h-10 rounded-xl flex items-center justify-center text-amber-600 mb-3 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                <Wallet className="w-5 h-5" />
+          <Card className="border-0 shadow-sm rounded-2xl bg-white overflow-hidden group card-hover">
+            <CardContent className="p-4">
+              <div className="bg-blue-50 w-9 h-9 rounded-xl flex items-center justify-center text-blue-600 mb-3">
+                <Wallet className="w-4 h-4" />
               </div>
-              <p className="text-[9px] uppercase tracking-widest font-black text-muted-foreground mb-1">Bonus Actif</p>
-              <p className="text-lg font-black text-slate-900">700 FCFA</p>
+              <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400 mb-1">Produits Actifs</p>
+              <p className="text-base font-extrabold text-gray-900" data-testid="text-active-count">{activeCount}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Community Links */}
-        <div className="grid grid-cols-1 gap-3">
-          <Link href="/support" className="flex items-center gap-3 bg-[#0088cc]/10 p-4 rounded-3xl border border-[#0088cc]/20 hover:bg-[#0088cc]/20 transition-all">
-            <div className="bg-[#0088cc] p-2 rounded-xl text-white">
+        <Link href="/support" className="block">
+          <div className="flex items-center gap-3 bg-sky-50 p-4 rounded-2xl border border-sky-100 hover:bg-sky-100/70 transition-all active:scale-[0.98]" data-testid="link-support">
+            <div className="bg-sky-500 p-2.5 rounded-xl text-white">
               <Send className="w-4 h-4" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-[#0088cc] tracking-tighter">Support Client</span>
-              <span className="text-xs font-bold text-[#0088cc]">TELEGRAM</span>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-sky-800">Support & Communauté</p>
+              <p className="text-[10px] text-sky-600">Telegram - Aide en ligne</p>
             </div>
-          </Link>
-        </div>
+            <ArrowRight className="w-4 h-4 text-sky-400" />
+          </div>
+        </Link>
 
-        {/* Promotional Banner */}
-        <Card className="border-0 bg-primary shadow-2xl rounded-[2.5rem] overflow-hidden group">
-          <div className="relative p-8 flex flex-col items-center text-center">
-            <div className="absolute top-0 right-0 -mr-4 -mt-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <Sprout className="w-40 h-40 text-white" />
+        <Card className="border-0 bg-gradient-to-br from-green-700 to-emerald-800 shadow-lg rounded-3xl overflow-hidden">
+          <div className="relative p-6 text-center">
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 opacity-10">
+              <Sprout className="w-32 h-32 text-white" />
             </div>
-            <h3 className="text-white text-2xl font-black mb-2 relative z-10">Cultivez vos revenus</h3>
-            <p className="text-green-100 text-sm mb-6 max-w-[200px] font-medium opacity-80 leading-relaxed">Découvrez nos projets d'élevage et de culture à haut rendement.</p>
+            <h3 className="text-white text-lg font-extrabold mb-1.5 relative z-10">Cultivez vos revenus</h3>
+            <p className="text-green-200/70 text-xs mb-5 max-w-[220px] mx-auto leading-relaxed">Découvrez nos projets agricoles à haut rendement.</p>
             <Link href="/products">
-              <Button className="bg-white text-primary hover:bg-green-50 rounded-2xl px-8 py-6 font-black uppercase tracking-widest text-xs shadow-lg relative z-10 transition-all active:scale-95">
+              <Button className="bg-white text-green-800 hover:bg-green-50 rounded-xl px-6 h-11 font-bold text-xs uppercase tracking-wider shadow-md relative z-10 transition-all active:scale-95" data-testid="button-catalog">
                 Voir le Catalogue VIP <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>

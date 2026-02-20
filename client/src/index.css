@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,33 @@
 
 :root {
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Montserrat', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
 
-  /* GreenHarvest Palette - Professional Green & Gold */
-  --background: 210 40% 98%;      /* Soft White */
-  --foreground: 160 50% 10%;      /* Very Dark Green/Black */
-  
-  --primary: 142 76% 28%;         /* Rich Forest Green #117e33 */
+  --background: 140 20% 97%;
+  --foreground: 160 50% 10%;
+
+  --primary: 152 69% 31%;
   --primary-foreground: 0 0% 100%;
-  
-  --secondary: 45 93% 47%;        /* Gold #e6ac00 */
-  --secondary-foreground: 0 0% 100%;
-  
-  --muted: 150 20% 96%;           /* Very Light Green tint */
-  --muted-foreground: 160 10% 40%;
-  
-  --accent: 45 93% 47%;           /* Gold Accent */
-  --accent-foreground: 0 0% 100%;
-  
+
+  --secondary: 43 96% 56%;
+  --secondary-foreground: 30 80% 15%;
+
+  --muted: 140 15% 94%;
+  --muted-foreground: 160 10% 45%;
+
+  --accent: 43 96% 56%;
+  --accent-foreground: 30 80% 15%;
+
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 150 15% 90%;
-  --input: 150 15% 90%;
-  --ring: 142 76% 28%;
-  
+  --border: 140 10% 90%;
+  --input: 140 10% 90%;
+  --ring: 152 69% 31%;
+
   --card: 0 0% 100%;
   --card-foreground: 160 50% 10%;
-  
+
   --radius: 0.75rem;
 }
 
@@ -41,30 +40,43 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply font-bold tracking-tight text-primary;
+    @apply font-bold tracking-tight;
+    color: inherit;
   }
 }
 
-/* Custom Gold Gradient Text */
-.text-gradient-gold {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-amber-600;
-}
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-amber-600;
+  }
 
-/* Custom Green Gradient Background */
-.bg-gradient-green {
-  @apply bg-gradient-to-br from-primary to-green-800;
-}
+  .bg-gradient-green {
+    @apply bg-gradient-to-br from-primary to-green-800;
+  }
 
-/* Card Hover Effects */
-.card-hover {
-  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/20;
-}
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
+  }
 
-/* Mobile Tab Bar Safe Area */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  .hover-elevate {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .h-13 {
+    height: 3.25rem;
+  }
 }

@@ -18,7 +18,14 @@ Preferred communication style: Simple, everyday language.
 - **Forms**: React Hook Form with Zod validation
 - **Build Tool**: Vite with custom Replit plugins for development
 
-The frontend follows a mobile-first design pattern with a green/gold color theme. Pages are organized in `client/src/pages/` with shared components in `client/src/components/`. Custom hooks in `client/src/hooks/` handle authentication, data fetching, and UI state.
+The frontend follows a mobile-first design pattern with a green/emerald color theme using Plus Jakarta Sans display font. Pages are organized in `client/src/pages/` with shared components in `client/src/components/`. Custom hooks in `client/src/hooks/` handle authentication, data fetching, and UI state.
+
+### Country System
+- **Country data**: Centralized in `client/src/lib/countries.ts` with flags, phone prefixes, and payment methods per country
+- **Country selection**: Required on both Login and Register pages before form fields (card grid with flags)
+- **Supported countries**: Togo, Bénin, Sénégal, Côte d'Ivoire, Burkina Faso, Mali, Congo-Brazzaville
+- **Dynamic flags**: Dashboard and Account pages show user's country flag using `getFlagForCountry()` helper
+- **Payment methods per country**: Deposit page shows only payment methods available in selected country
 
 ### Backend Architecture
 - **Framework**: Express.js 5 with TypeScript

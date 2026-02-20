@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowDownLeft } from "lucide-react";
+import { Loader2, ArrowDownLeft, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { format } from "date-fns";
+import { Transaction } from "@shared/schema";
 
 const withdrawSchema = z.object({
   amount: z.coerce.number().min(1000, "Minimum 1000 FCFA"),
@@ -24,7 +25,7 @@ export default function Withdraw() {
   const { user } = useAuth();
   const withdraw = useWithdraw();
   const { data: transactions } = useTransactions();
-  
+
   const paymentNameParts = user?.paymentName?.split(' ') || [];
   const defaultFirstName = paymentNameParts.length > 0 ? paymentNameParts[0] : (user?.firstName || "");
   const defaultLastName = paymentNameParts.length > 1 ? paymentNameParts.slice(1).join(' ') : (user?.lastName || "");
@@ -44,24 +45,29 @@ export default function Withdraw() {
     withdraw.mutate(values);
   };
 
-  const withdrawals = transactions?.filter(t => t.type === 'withdrawal') || [];
+  const withdrawals = transactions?.filter((t: Transaction) => t.type === 'withdrawal') || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-gray-900 px-6 pt-12 pb-8 rounded-b-[2rem] shadow-lg">
-        <h1 className="text-2xl font-bold text-white font-display mb-1">Retrait Sécurisé</h1>
-        <p className="text-gray-400 text-sm">Transférez vos gains vers votre mobile money</p>
+    <div className="min-h-screen bg-gray-50 pb-24" data-testid="withdraw-page">
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 px-5 pt-12 pb-8 rounded-b-[2rem]">
+        <h1 className="text-xl font-extrabold text-white">Retrait Sécurisé</h1>
+        <p className="text-gray-400 text-xs mt-1">Transférez vos gains vers votre mobile money</p>
       </div>
 
-      <div className="p-4 -mt-6 space-y-6">
-        <Card className="border-0 shadow-lg rounded-2xl">
-          <CardHeader>
-             <div className="flex justify-between items-center">
-               <CardTitle className="text-lg">Demande de Retrait</CardTitle>
-               <Badge variant="outline" className="bg-gray-50">Solde: {user?.balance} FCFA</Badge>
-             </div>
+      <div className="px-5 -mt-6 space-y-5">
+        <Card className="border-0 shadow-sm rounded-2xl">
+          <CardHeader className="px-5 py-4 border-b border-gray-50">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-sm font-extrabold text-gray-800 flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-primary" />
+                Demande de Retrait
+              </CardTitle>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 font-bold text-xs">
+                {user?.balance?.toLocaleString()} FCFA
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -69,24 +75,24 @@ export default function Withdraw() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Montant à retirer (FCFA)</FormLabel>
+                      <FormLabel className="text-xs font-semibold text-gray-500">Montant à retirer (FCFA)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                        <Input type="number" {...field} className="rounded-xl h-12 bg-gray-50 border-gray-100 font-bold text-base" data-testid="input-withdraw-amount" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Prénom</FormLabel>
+                        <FormLabel className="text-xs font-semibold text-gray-500">Prénom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                          <Input {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-firstname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -97,9 +103,9 @@ export default function Withdraw() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nom</FormLabel>
+                        <FormLabel className="text-xs font-semibold text-gray-500">Nom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                          <Input {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-lastname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -112,19 +118,20 @@ export default function Withdraw() {
                   name="mobileNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Numéro Mobile Money</FormLabel>
+                      <FormLabel className="text-xs font-semibold text-gray-500">Numéro Mobile Money</FormLabel>
                       <FormControl>
-                        <Input type="tel" {...field} className="rounded-xl bg-gray-50 border-gray-200" />
+                        <Input type="tel" {...field} className="rounded-xl h-11 bg-gray-50 border-gray-100 font-medium" data-testid="input-withdraw-mobile" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl py-6 text-lg shadow-lg shadow-primary/30 mt-4"
+                <Button
+                  type="submit"
+                  className="w-full h-14 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black text-white font-bold rounded-xl shadow-md mt-2 transition-all active:scale-[0.98]"
                   disabled={withdraw.isPending}
+                  data-testid="button-confirm-withdraw"
                 >
                   {withdraw.isPending ? <Loader2 className="animate-spin mr-2" /> : "Confirmer le retrait"}
                 </Button>
@@ -134,32 +141,32 @@ export default function Withdraw() {
         </Card>
 
         <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-3 ml-1">Historique</h3>
-          <div className="space-y-3">
+          <h3 className="text-sm font-extrabold text-gray-800 mb-3 px-1">Historique des retraits</h3>
+          <div className="space-y-2">
             {withdrawals.length === 0 ? (
-              <div className="bg-white rounded-2xl p-6 text-center text-muted-foreground text-sm border border-gray-100">
+              <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm border border-gray-100">
                 Aucun retrait effectué
               </div>
             ) : (
-              withdrawals.map((tx) => (
-                <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
+              withdrawals.map((tx: Transaction) => (
+                <div key={tx.id} className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center" data-testid={`withdrawal-${tx.id}`}>
                   <div className="flex items-center gap-3">
-                    <div className="bg-red-50 p-2 rounded-full text-red-600">
-                      <ArrowDownLeft className="w-5 h-5" />
+                    <div className="bg-red-50 p-2 rounded-xl text-red-500">
+                      <ArrowDownLeft className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800">Retrait</p>
-                      <p className="text-xs text-gray-400">{format(new Date(tx.createdAt!), 'dd/MM/yyyy HH:mm')}</p>
+                      <p className="font-bold text-sm text-gray-800">Retrait</p>
+                      <p className="text-[10px] text-gray-400">{format(new Date(tx.createdAt!), 'dd/MM/yyyy HH:mm')}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-800">-{tx.amount} FCFA</p>
-                    <Badge variant="secondary" className={`text-xs ${
-                      tx.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      tx.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
+                    <p className="font-bold text-sm text-gray-800">-{tx.amount.toLocaleString()} F</p>
+                    <Badge variant="secondary" className={`text-[10px] ${
+                      tx.status === 'completed' ? 'bg-green-50 text-green-700' :
+                      tx.status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                      'bg-red-50 text-red-700'
                     }`}>
-                      {tx.status === 'completed' ? 'Validé' : 
+                      {tx.status === 'completed' ? 'Validé' :
                        tx.status === 'pending' ? 'En attente' : 'Refusé'}
                     </Badge>
                   </div>

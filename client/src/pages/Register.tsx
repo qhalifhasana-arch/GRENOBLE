@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Sprout } from "lucide-react";
+import { Loader2, Phone, KeyRound, UserCircle, ChevronRight, ArrowLeft, Gift } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import farmImg from "@assets/stock_images/modern_professional__678ca4d2.jpg";
 import {
   Form,
   FormControl,
@@ -16,14 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { COUNTRIES, type Country } from "@/lib/countries";
+import { cn } from "@/lib/utils";
 
 const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom est requis"),
@@ -36,7 +29,8 @@ const registerSchema = z.object({
 
 export default function Register() {
   const { register } = useAuth();
-  
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -49,169 +43,224 @@ export default function Register() {
     },
   });
 
+  const handleCountrySelect = (country: Country) => {
+    setSelectedCountry(country);
+    form.setValue("country", country.name);
+  };
+
   const onSubmit = (values: z.infer<typeof registerSchema>) => {
     register.mutate(values);
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-4">
-      {/* Hero Section with Image */}
-      <div className="w-full max-w-2xl mt-4 mb-8 overflow-hidden rounded-3xl relative h-48 md:h-64 shadow-2xl">
-        <img 
-          src={farmImg} 
-          alt="Exploitation Agricole" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
-          <h2 className="text-white text-2xl font-bold">Bienvenue chez GreenHarvest</h2>
-          <p className="text-white/80 text-sm">L'agriculture de demain, dès aujourd'hui.</p>
-        </div>
-      </div>
-
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-           <div className="flex justify-center mb-4">
-              <div className="bg-primary/10 p-4 rounded-full">
-                <Sprout className="w-12 h-12 text-primary" />
-              </div>
-           </div>
-           <h1 className="text-4xl font-extrabold text-primary tracking-tight">GreenHarvest</h1>
-           <p className="text-muted-foreground">Investissement Agricole Durable</p>
-           
-           <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg inline-block font-semibold text-sm mt-2 border border-amber-200">
-             🎁 Bonus d’inscription : 700 FCFA
-           </div>
-        </div>
-
-        <Card className="border-0 shadow-xl shadow-primary/5">
-          <CardHeader>
-            <CardTitle className="text-center text-xl">Créer un compte</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem className="mb-6">
-                      <FormLabel className="text-lg font-black text-primary uppercase tracking-wider">Étape 1 : Choisissez votre pays</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="rounded-2xl h-14 bg-primary/5 border-primary/20 text-lg font-bold">
-                            <SelectValue placeholder="Sélectionnez votre pays" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="rounded-2xl border-primary/10 shadow-xl">
-                          <SelectItem value="Togo" className="py-3 font-bold">🇹🇬 Togo</SelectItem>
-                          <SelectItem value="Bénin" className="py-3 font-bold">🇧🇯 Bénin</SelectItem>
-                          <SelectItem value="Sénégal" className="py-3 font-bold">🇸🇳 Sénégal</SelectItem>
-                          <SelectItem value="Côte d'Ivoire" className="py-3 font-bold">🇨🇮 Côte d'Ivoire</SelectItem>
-                          <SelectItem value="Burkina Faso" className="py-3 font-bold">🇧🇫 Burkina Faso</SelectItem>
-                          <SelectItem value="Mali" className="py-3 font-bold">🇲🇱 Mali</SelectItem>
-                          <SelectItem value="Congo-Brazzaville" className="py-3 font-bold">🇨🇬 Congo-Brazzaville</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prénom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Jean" {...field} className="rounded-xl bg-gray-50 border-gray-200 focus:bg-white" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nom</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Dupont" {...field} className="rounded-xl bg-gray-50 border-gray-200 focus:bg-white" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Téléphone</FormLabel>
-                      <FormControl>
-                        <Input type="tel" placeholder="+228..." {...field} className="rounded-xl bg-gray-50 border-gray-200 focus:bg-white" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mot de passe</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="rounded-xl bg-gray-50 border-gray-200 focus:bg-white" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="referralCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Code de parrainage (Optionnel)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Code parrain" {...field} className="rounded-xl bg-gray-50 border-gray-200 focus:bg-white" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-6 text-lg font-semibold shadow-lg shadow-primary/30 mt-4"
-                  disabled={register.isPending}
-                >
-                  {register.isPending ? <Loader2 className="animate-spin mr-2" /> : "S'inscrire"}
-                </Button>
-              </form>
-            </Form>
-
-            <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-muted-foreground mb-4">Vous avez déjà un compte ?</p>
-              <Link href="/login">
-                <Button variant="outline" className="w-full rounded-xl py-6 border-primary text-primary font-bold hover:bg-primary/5">
-                  Se connecter
-                </Button>
-              </Link>
+    <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950 flex flex-col" data-testid="register-page">
+      <div className="flex-1 flex flex-col items-center px-5 py-6">
+        <div className="w-full max-w-md space-y-5">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 mb-1">
+              <span className="text-2xl">🌱</span>
             </div>
-          </CardContent>
-        </Card>
-        
-        <p className="text-center text-sm text-muted-foreground mt-4 pb-12">
-          En vous inscrivant, vous acceptez nos <span className="text-primary underline cursor-pointer">conditions d'utilisation</span>.
-        </p>
+            <h1 className="text-2xl font-black text-white tracking-tight">GreenHarvest</h1>
+            <p className="text-green-300/80 text-xs font-medium">Investissement Agricole Durable</p>
+
+            <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-sm border border-amber-400/30 text-amber-200 px-4 py-2 rounded-full text-xs font-bold mt-2">
+              <Gift className="w-3.5 h-3.5" />
+              Bonus d'inscription : 700 FCFA
+            </div>
+          </div>
+
+          {!selectedCountry ? (
+            <div className="space-y-4 animate-in fade-in duration-300">
+              <div className="text-center mb-1">
+                <h2 className="text-lg font-bold text-white mb-1">D'où venez-vous ?</h2>
+                <p className="text-green-300/60 text-xs">Choisissez votre pays pour créer votre compte</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {COUNTRIES.map((country) => (
+                  <button
+                    key={country.code}
+                    type="button"
+                    onClick={() => handleCountrySelect(country)}
+                    className="bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all active:scale-95 group"
+                    data-testid={`country-select-${country.code}`}
+                  >
+                    <span className="text-4xl group-hover:scale-110 transition-transform">{country.flag}</span>
+                    <span className="text-white text-xs font-bold">{country.name}</span>
+                    <span className="text-green-300/50 text-[10px]">{country.phonePrefix}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-center pt-3">
+                <Link href="/login">
+                  <span className="text-sm text-green-300/60 hover:text-green-200 cursor-pointer transition-colors" data-testid="link-login">
+                    Déjà un compte ? <strong className="text-green-300">Se connecter</strong>
+                  </span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCountry(null);
+                  form.setValue("country", "");
+                }}
+                className="flex items-center gap-3 w-full bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 hover:bg-white/15 transition-all"
+                data-testid="button-change-country"
+              >
+                <span className="text-3xl">{selectedCountry.flag}</span>
+                <div className="flex-1 text-left">
+                  <p className="text-white font-bold text-sm">{selectedCountry.name}</p>
+                  <p className="text-green-300/60 text-xs">{selectedCountry.phonePrefix}</p>
+                </div>
+                <div className="flex items-center gap-1 text-green-300/40 text-xs font-medium">
+                  <ArrowLeft className="w-3 h-3" />
+                  Changer
+                </div>
+              </button>
+
+              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 space-y-4">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Prénom</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Jean"
+                                {...field}
+                                className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                data-testid="input-firstname"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Nom</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Dupont"
+                                {...field}
+                                className="h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                data-testid="input-lastname"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Téléphone</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                              <Input
+                                type="tel"
+                                placeholder={`${selectedCountry.phonePrefix} ...`}
+                                {...field}
+                                className="pl-11 h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                data-testid="input-phone"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Mot de passe</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                {...field}
+                                className="pl-11 h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                data-testid="input-password"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="referralCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-green-200/80 text-xs font-bold uppercase tracking-wider">Code parrainage <span className="text-green-400/40 normal-case">(optionnel)</span></FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                              <Input
+                                placeholder="Code parrain"
+                                {...field}
+                                className="pl-11 h-12 rounded-xl bg-white/10 border-white/10 text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                data-testid="input-referral"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button
+                      type="submit"
+                      className="w-full h-14 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl text-base font-bold shadow-lg shadow-green-900/40 mt-1 transition-all active:scale-[0.98]"
+                      disabled={register.isPending}
+                      data-testid="button-register"
+                    >
+                      {register.isPending ? (
+                        <Loader2 className="animate-spin mr-2 w-5 h-5" />
+                      ) : (
+                        <>
+                          Créer mon compte
+                          <ChevronRight className="w-5 h-5 ml-1" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </div>
+
+              <div className="text-center pt-1 pb-8">
+                <Link href="/login">
+                  <Button variant="ghost" className="text-green-300/70 hover:text-green-200 hover:bg-white/5 font-bold rounded-xl h-12 w-full" data-testid="link-login">
+                    Déjà un compte ? Se connecter
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
