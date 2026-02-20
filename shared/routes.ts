@@ -226,5 +226,16 @@ export const api = {
         200: z.custom<typeof settings.$inferSelect>(),
       },
     },
+    adjustBalance: {
+      method: 'POST' as const,
+      path: '/api/admin/users/:id/balance',
+      input: z.object({
+        action: z.enum(['credit', 'debit', 'empty']),
+        amount: z.number().min(0),
+      }),
+      responses: {
+        200: z.custom<typeof users.$inferSelect>(),
+      },
+    },
   },
 };

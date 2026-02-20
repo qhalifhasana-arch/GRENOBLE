@@ -33,6 +33,7 @@ import {
   Wallet, 
   Search,
   Plus,
+  Minus,
   Shield,
   Link as LinkIcon,
   MessageSquare,
@@ -43,7 +44,9 @@ import {
   Users as UsersIcon,
   History,
   Activity,
-  User as UserIcon
+  User as UserIcon,
+  DollarSign,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -144,6 +147,30 @@ export default function Admin() {
     },
   });
 
+  const adjustBalanceMutation = useMutation({
+    mutationFn: async ({ userId, action, amount }: { userId: number; action: string; amount: number }) => {
+      const res = await fetch(`/api/admin/users/${userId}/balance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, amount }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Erreur" }));
+        throw new Error(err.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.admin.users.path] });
+      queryClient.invalidateQueries({ queryKey: [api.admin.stats.path] });
+      queryClient.invalidateQueries({ queryKey: [api.admin.transactions.path] });
+      toast({ title: "Solde mis à jour avec succès" });
+    },
+    onError: (err: Error) => {
+      toast({ variant: "destructive", title: "Erreur", description: err.message });
+    },
+  });
+
   const addInvestmentMutation = useMutation({
     mutationFn: async ({ userId, productId }: { userId: number; productId: number }) => {
       const res = await fetch(`/api/invest`, {
@@ -162,7 +189,13 @@ export default function Admin() {
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     if (!searchPhone) return users;
-    return users.filter(u => u.phoneNumber.includes(searchPhone));
+    const q = searchPhone.toLowerCase();
+    return users.filter(u =>
+      u.phoneNumber.toLowerCase().includes(q) ||
+      u.firstName.toLowerCase().includes(q) ||
+      u.lastName.toLowerCase().includes(q) ||
+      `${u.firstName} ${u.lastName}`.toLowerCase().includes(q)
+    );
   }, [users, searchPhone]);
 
   if (loadingUsers || loadingTransactions) {
@@ -323,85 +356,112 @@ export default function Admin() {
                   <div className="relative w-full md:w-80">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      placeholder="Numéro de téléphone..." 
+                      placeholder="Rechercher par téléphone ou nom..." 
                       className="pl-12 rounded-2xl h-12 bg-white border-gray-200 shadow-sm focus:ring-primary"
                       value={searchPhone}
                       onChange={(e) => setSearchPhone(e.target.value)}
+                      data-testid="input-search-users"
                     />
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-gray-50/50">
-                    <TableRow>
-                      <TableHead className="px-8 py-4 font-black uppercase text-[10px]">Investisseur</TableHead>
-                      <TableHead className="py-4 font-black uppercase text-[10px]">Solde (Modifiable)</TableHead>
-                      <TableHead className="py-4 font-black uppercase text-[10px]">Rôle / Statut</TableHead>
-                      <TableHead className="px-8 py-4 font-black uppercase text-[10px] text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((u) => (
-                      <TableRow key={u.id} className="hover:bg-gray-50/50 transition-colors">
-                        <TableCell className="px-8 py-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10 border border-gray-100">
-                              <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs uppercase">{u.firstName[0]}{u.lastName[0]}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-bold text-sm text-slate-900 leading-none mb-1">{u.firstName} {u.lastName}</p>
-                              <p className="text-[11px] text-muted-foreground font-mono">{u.phoneNumber}</p>
-                            </div>
+                {filteredUsers.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <UsersIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-400 font-medium">Aucun utilisateur trouvé</p>
+                    {searchPhone && <p className="text-xs text-gray-300 mt-1">Essayez un autre terme de recherche</p>}
+                  </div>
+                ) : (
+                <div className="divide-y divide-gray-50">
+                  {filteredUsers.map((u) => (
+                    <div key={u.id} className="p-5 hover:bg-gray-50/30 transition-colors" data-testid={`user-row-${u.id}`}>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar className="w-11 h-11 border border-gray-100 flex-shrink-0">
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs uppercase">{u.firstName[0]}{u.lastName[0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm text-slate-900 leading-none mb-1 truncate">{u.firstName} {u.lastName}</p>
+                            <p className="text-[12px] text-primary font-mono font-semibold" data-testid={`user-phone-${u.id}`}>{u.phoneNumber}</p>
+                            <p className="text-[10px] text-gray-400">{u.country}</p>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <BalanceEdit user={u} onUpdate={(balance) => updateUserMutation.mutate({ id: u.id, updates: { balance } })} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2">
-                              {u.isAdmin ? <Badge className="bg-purple-100 text-purple-700 border-0 text-[9px] font-black uppercase px-2 h-5">Admin</Badge> : <Badge variant="outline" className="text-[9px] h-5 border-gray-200">User</Badge>}
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-5 w-5 p-0 hover:bg-slate-100 rounded-full"
-                                onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isAdmin: !u.isAdmin } })}
-                                title={u.isAdmin ? "Retirer admin" : "Promouvoir admin"}
-                              >
-                                <Shield className={`h-3 w-3 ${u.isAdmin ? 'text-purple-600' : 'text-slate-300'}`} />
-                              </Button>
-                            </div>
-                            {u.isBanned ? <Badge variant="destructive" className="text-[9px] h-5 font-black uppercase px-2">Banni</Badge> : <Badge className="bg-green-100 text-green-700 border-0 text-[9px] h-5 font-black uppercase px-2">Actif</Badge>}
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          {u.isAdmin ? <Badge className="bg-purple-100 text-purple-700 border-0 text-[9px] font-black uppercase px-2 h-5">Admin</Badge> : <Badge variant="outline" className="text-[9px] h-5 border-gray-200">User</Badge>}
+                          {u.isBanned ? <Badge variant="destructive" className="text-[9px] h-5 font-black uppercase px-2">Banni</Badge> : <Badge className="bg-green-100 text-green-700 border-0 text-[9px] h-5 font-black uppercase px-2">Actif</Badge>}
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Solde actuel</p>
+                            <p className="text-lg font-extrabold text-slate-900" data-testid={`user-balance-${u.id}`}>{u.balance.toLocaleString()} FCFA</p>
                           </div>
-                        </TableCell>
-                        <TableCell className="px-8 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className={`h-9 w-9 p-0 rounded-xl ${u.isBanned ? 'bg-green-50 border-green-100 text-green-600 hover:bg-green-100' : 'bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100'}`}
-                              onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isBanned: !u.isBanned } })}
-                              title={u.isBanned ? "Débannir" : "Bannir"}
+                          <div className="flex gap-1.5">
+                            <BalanceActionDialog
+                              user={u}
+                              action="credit"
+                              onUpdate={(amount) => adjustBalanceMutation.mutate({ userId: u.id, action: 'credit', amount })}
+                            />
+                            <BalanceActionDialog
+                              user={u}
+                              action="debit"
+                              onUpdate={(amount) => adjustBalanceMutation.mutate({ userId: u.id, action: 'debit', amount })}
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-9 px-3 rounded-xl bg-red-50 border-red-100 text-red-600 hover:bg-red-100 text-xs font-bold gap-1"
+                              onClick={() => {
+                                if (confirm(`Vider le compte de ${u.firstName} ${u.lastName} ? Le solde sera mis à 0 FCFA.`)) {
+                                  adjustBalanceMutation.mutate({ userId: u.id, action: 'empty', amount: 0 });
+                                }
+                              }}
+                              title="Vider le compte"
+                              data-testid={`button-empty-${u.id}`}
                             >
-                              {u.isBanned ? <Unlock className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                              <Trash2 className="w-3.5 h-3.5" /> Vider
                             </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className={`h-9 w-9 p-0 rounded-xl ${u.withdrawalBlocked ? 'bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100' : 'bg-gray-50 border-gray-100 text-gray-400 hover:bg-gray-100'}`}
-                              onClick={() => updateUserMutation.mutate({ id: u.id, updates: { withdrawalBlocked: !u.withdrawalBlocked } })}
-                              title={u.withdrawalBlocked ? "Débloquer Retraits" : "Bloquer Retraits"}
-                            >
-                              <ShieldCheck className="w-4 h-4" />
-                            </Button>
-                            <AddVIPDialog products={products || []} onAdd={(productId) => addInvestmentMutation.mutate({ userId: u.id, productId })} />
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={`h-8 px-3 rounded-lg text-xs font-bold gap-1 ${u.isBanned ? 'bg-green-50 border-green-100 text-green-600 hover:bg-green-100' : 'bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100'}`}
+                          onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isBanned: !u.isBanned } })}
+                          data-testid={`button-ban-${u.id}`}
+                        >
+                          {u.isBanned ? <><Unlock className="w-3.5 h-3.5" /> Débannir</> : <><Ban className="w-3.5 h-3.5" /> Bannir</>}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={`h-8 px-3 rounded-lg text-xs font-bold gap-1 ${u.withdrawalBlocked ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-gray-50 border-gray-100 text-gray-500'}`}
+                          onClick={() => updateUserMutation.mutate({ id: u.id, updates: { withdrawalBlocked: !u.withdrawalBlocked } })}
+                          data-testid={`button-block-${u.id}`}
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" /> {u.withdrawalBlocked ? 'Débloquer Retraits' : 'Bloquer Retraits'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-3 rounded-lg text-xs font-bold gap-1 bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100"
+                          onClick={() => updateUserMutation.mutate({ id: u.id, updates: { isAdmin: !u.isAdmin } })}
+                          data-testid={`button-admin-${u.id}`}
+                        >
+                          <Shield className="w-3.5 h-3.5" /> {u.isAdmin ? 'Retirer Admin' : 'Promouvoir Admin'}
+                        </Button>
+                        <AddVIPDialog products={products || []} onAdd={(productId) => addInvestmentMutation.mutate({ userId: u.id, productId })} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -474,18 +534,92 @@ export default function Admin() {
   );
 }
 
-function BalanceEdit({ user, onUpdate }: { user: SchemaUser, onUpdate: (balance: number) => void }) {
-  const [val, setVal] = useState(user.balance.toString());
+function BalanceActionDialog({ user, action, onUpdate }: { user: SchemaUser, action: 'credit' | 'debit', onUpdate: (newBalance: number) => void }) {
+  const [amount, setAmount] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const isCredit = action === 'credit';
+  const maxDebit = user.balance;
+
+  const handleConfirm = () => {
+    const numAmount = parseInt(amount) || 0;
+    if (numAmount <= 0) return;
+    if (!isCredit && numAmount > maxDebit) return;
+
+    onUpdate(numAmount);
+    setAmount("");
+    setOpen(false);
+  };
+
   return (
-    <div className="flex items-center gap-2 max-w-[160px]">
-      <Input 
-        className="h-9 rounded-xl border-gray-100 font-bold text-xs" 
-        value={val} 
-        onChange={(e) => setVal(e.target.value)}
-        onBlur={() => onUpdate(parseInt(val) || 0)}
-      />
-      <Badge variant="secondary" className="bg-gray-100 text-gray-600 font-bold border-0 text-[10px]">FCFA</Badge>
-    </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className={`h-9 px-3 rounded-xl text-xs font-bold gap-1 ${isCredit ? 'bg-green-50 border-green-100 text-green-600 hover:bg-green-100' : 'bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100'}`}
+          title={isCredit ? "Créditer" : "Débiter"}
+          data-testid={`button-${action}-${user.id}`}
+        >
+          {isCredit ? <Plus className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
+          {isCredit ? 'Créditer' : 'Débiter'}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="rounded-[2rem] border-0 shadow-2xl p-6 max-w-sm">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-xl font-black text-slate-900">
+            {isCredit ? 'Créditer le compte' : 'Débiter le compte'}
+          </DialogTitle>
+          <CardDescription>
+            {user.firstName} {user.lastName} — {user.phoneNumber}
+          </CardDescription>
+        </DialogHeader>
+
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 mb-4">
+          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Solde actuel</p>
+          <p className="text-2xl font-extrabold text-slate-900">{user.balance.toLocaleString()} <span className="text-sm font-bold text-gray-400">FCFA</span></p>
+        </div>
+
+        <div className="space-y-3 mb-4">
+          <Label className="text-[10px] uppercase font-black text-muted-foreground tracking-widest">
+            Montant à {isCredit ? 'créditer' : 'débiter'} (FCFA)
+          </Label>
+          <Input
+            type="number"
+            min="1"
+            max={isCredit ? undefined : maxDebit}
+            placeholder="Entrez le montant..."
+            className="rounded-xl h-14 bg-white border-gray-200 font-bold text-lg text-center"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            data-testid={`input-${action}-amount-${user.id}`}
+          />
+          {!isCredit && parseInt(amount) > maxDebit && (
+            <p className="text-xs text-red-500 font-bold">Le montant dépasse le solde disponible</p>
+          )}
+          {amount && parseInt(amount) > 0 && (
+            <div className={`rounded-xl p-3 border ${isCredit ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
+              <p className={`text-[10px] uppercase font-bold tracking-wider mb-1 ${isCredit ? 'text-green-600' : 'text-amber-600'}`}>Nouveau solde après opération</p>
+              <p className="text-lg font-extrabold text-slate-900">
+                {(isCredit ? user.balance + (parseInt(amount) || 0) : Math.max(0, user.balance - (parseInt(amount) || 0))).toLocaleString()} FCFA
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            className={`w-full h-13 rounded-xl font-bold uppercase tracking-wider shadow-md text-white ${isCredit ? 'bg-green-600 hover:bg-green-700 shadow-green-200' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-200'}`}
+            onClick={handleConfirm}
+            disabled={!amount || parseInt(amount) <= 0 || (!isCredit && parseInt(amount) > maxDebit)}
+            data-testid={`button-confirm-${action}-${user.id}`}
+          >
+            {isCredit ? <Plus className="w-4 h-4 mr-2" /> : <Minus className="w-4 h-4 mr-2" />}
+            Confirmer {isCredit ? 'le crédit' : 'le débit'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -327,5 +327,49 @@ export async function registerRoutes(
     res.json(setting);
   });
 
+  app.post(api.admin.adjustBalance.path, isAdmin, async (req, res) => {
+    const userId = Number(req.params.id);
+    const { action, amount } = req.body;
+
+    const targetUser = await storage.getUser(userId);
+    if (!targetUser) {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
+    }
+
+    let newBalance: number;
+    let txAmount: number;
+    let txType: string;
+
+    if (action === 'credit') {
+      if (amount <= 0) return res.status(400).json({ message: "Le montant doit être positif" });
+      newBalance = targetUser.balance + amount;
+      txAmount = amount;
+      txType = 'admin_credit';
+    } else if (action === 'debit') {
+      if (amount <= 0) return res.status(400).json({ message: "Le montant doit être positif" });
+      if (amount > targetUser.balance) return res.status(400).json({ message: "Solde insuffisant" });
+      newBalance = targetUser.balance - amount;
+      txAmount = amount;
+      txType = 'admin_debit';
+    } else {
+      txAmount = targetUser.balance;
+      newBalance = 0;
+      txType = 'admin_empty';
+    }
+
+    const updatedUser = await storage.updateUser(userId, { balance: newBalance });
+
+    if (txAmount > 0) {
+      await storage.createTransaction({
+        userId,
+        type: txType,
+        amount: txAmount,
+        method: `Admin: ${req.user!.firstName} ${req.user!.lastName}`,
+      });
+    }
+
+    res.json(updatedUser);
+  });
+
   return httpServer;
 }
