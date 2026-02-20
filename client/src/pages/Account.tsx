@@ -5,17 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LogOut, Shield, User, Settings, CreditCard, ChevronRight,
   Sprout, Loader2, Wallet, Phone,
-  MapPin, Lock, Landmark, Bell, MessageCircle
+  MapPin, Lock, Landmark, Bell, MessageCircle,
+  Clock, CalendarCheck, CalendarClock, Hourglass, TrendingUp, CircleDollarSign
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Investment, Product, Transaction } from "@shared/schema";
 import { api } from "@shared/routes";
-import { format, addDays } from "date-fns";
+import { format, addDays, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -348,57 +349,30 @@ export default function Account() {
                   Mes Produits VIP
                 </h3>
 
-                <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
-                  <CardContent className="p-0">
-                    {loadingInvestments ? (
-                      <div className="p-8 flex justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                {loadingInvestments ? (
+                  <div className="p-8 flex justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : investments?.length === 0 ? (
+                  <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
+                    <CardContent className="p-8 text-center">
+                      <div className="bg-gray-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Sprout className="w-7 h-7 text-gray-400" />
                       </div>
-                    ) : investments?.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className="text-sm text-gray-400">Aucun produit actif</p>
-                        <Link href="/products">
-                          <Button variant="ghost" className="text-primary font-bold mt-2 text-sm">Découvrir les produits</Button>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-gray-50">
-                        {investments?.map((inv) => {
-                          const startDate = new Date(inv.startDate || Date.now());
-                          const expiryDate = addDays(startDate, inv.product.duration);
-                          const isExpired = inv.status === 'expired' || new Date() > expiryDate;
-
-                          return (
-                            <div key={inv.id} className="p-5 hover:bg-gray-50/50 transition-colors" data-testid={`investment-${inv.id}`}>
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <span className="font-bold text-base text-gray-800">{inv.product.name}</span>
-                                  <span className="text-xs text-gray-400 block mt-0.5">Activé le {format(startDate, 'dd MMM yyyy', { locale: fr })}</span>
-                                </div>
-                                <Badge className={cn(
-                                  "border-0 h-6 text-xs uppercase tracking-wider font-bold px-3",
-                                  isExpired ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
-                                )}>
-                                  {isExpired ? "Expiré" : "Actif"}
-                                </Badge>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3 mt-3">
-                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                  <p className="text-xs text-gray-400 uppercase font-bold">Investi</p>
-                                  <p className="text-sm font-extrabold text-gray-800">{inv.product.price.toLocaleString()} F</p>
-                                </div>
-                                <div className="bg-green-50/50 p-3 rounded-lg border border-green-100/50">
-                                  <p className="text-xs text-green-600 uppercase font-bold">Gains/Jour</p>
-                                  <p className="text-sm font-extrabold text-green-700">{inv.product.dailyRate.toLocaleString()} F</p>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      <p className="text-sm text-gray-400 mb-1">Aucun produit actif</p>
+                      <p className="text-xs text-gray-300 mb-3">Investissez dans un pack VIP pour commencer à gagner</p>
+                      <Link href="/products">
+                        <Button className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-6 h-11 text-sm">Découvrir les produits</Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {investments?.map((inv) => (
+                      <InvestmentDetailCard key={inv.id} investment={inv} />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -411,5 +385,154 @@ export default function Account() {
       {renderSection()}
       <BottomNav />
     </div>
+  );
+}
+
+function InvestmentDetailCard({ investment: inv }: { investment: Investment & { product: Product } }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const startDate = new Date(inv.startDate || Date.now());
+  const expiryDate = addDays(startDate, inv.product.duration);
+  const isExpired = inv.status === 'expired' || inv.status === 'completed' || now > expiryDate;
+
+  const daysRemaining = Math.max(0, differenceInDays(expiryDate, now));
+  const hoursRemaining = Math.max(0, differenceInHours(expiryDate, now) % 24);
+  const minutesRemaining = Math.max(0, differenceInMinutes(expiryDate, now) % 60);
+
+  const totalDays = inv.product.duration;
+  const daysElapsed = Math.min(totalDays, differenceInDays(now, startDate));
+  const progressPercent = Math.min(100, Math.round((daysElapsed / totalDays) * 100));
+
+  const totalEarnedEstimate = daysElapsed * inv.product.dailyRate;
+
+  const statusConfig = isExpired
+    ? { label: "Expiré", color: "bg-red-100 text-red-700", dotColor: "bg-red-500" }
+    : inv.status === 'active'
+    ? { label: "Actif", color: "bg-green-100 text-green-700", dotColor: "bg-green-500" }
+    : { label: "En cours", color: "bg-amber-100 text-amber-700", dotColor: "bg-amber-500" };
+
+  return (
+    <Card className="border-0 shadow-md rounded-2xl overflow-hidden bg-white" data-testid={`investment-${inv.id}`}>
+      <div className="bg-gradient-to-r from-green-700 to-emerald-800 px-5 py-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-green-200/70 text-[10px] font-bold uppercase tracking-widest">VIP {inv.product.vipLevel}</p>
+            <h4 className="text-white text-lg font-extrabold leading-tight">{inv.product.name}</h4>
+          </div>
+          <Badge className={cn("border-0 h-7 text-xs font-bold px-3 gap-1.5", statusConfig.color)}>
+            <span className={cn("w-2 h-2 rounded-full inline-block", statusConfig.dotColor)} />
+            {statusConfig.label}
+          </Badge>
+        </div>
+      </div>
+
+      <CardContent className="p-5 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CircleDollarSign className="w-3.5 h-3.5 text-gray-400" />
+              <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Prix du produit</p>
+            </div>
+            <p className="text-base font-extrabold text-gray-900" data-testid={`text-price-${inv.id}`}>{inv.product.price.toLocaleString()} FCFA</p>
+          </div>
+          <div className="bg-green-50 p-3.5 rounded-xl border border-green-100">
+            <div className="flex items-center gap-2 mb-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+              <p className="text-[10px] text-green-600 uppercase font-bold tracking-wider">Revenu / 24h</p>
+            </div>
+            <p className="text-base font-extrabold text-green-700" data-testid={`text-daily-${inv.id}`}>+{inv.product.dailyRate.toLocaleString()} FCFA</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100/50">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CalendarCheck className="w-3.5 h-3.5 text-blue-500" />
+              <p className="text-[10px] text-blue-600 uppercase font-bold tracking-wider">Date d'achat</p>
+            </div>
+            <p className="text-sm font-bold text-gray-800" data-testid={`text-start-${inv.id}`}>
+              {format(startDate, 'dd MMM yyyy', { locale: fr })}
+            </p>
+            <p className="text-[11px] text-gray-400 font-medium">
+              {format(startDate, 'HH:mm', { locale: fr })}
+            </p>
+          </div>
+          <div className="bg-purple-50/50 p-3.5 rounded-xl border border-purple-100/50">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CalendarClock className="w-3.5 h-3.5 text-purple-500" />
+              <p className="text-[10px] text-purple-600 uppercase font-bold tracking-wider">Début du crédit</p>
+            </div>
+            <p className="text-sm font-bold text-gray-800" data-testid={`text-credit-start-${inv.id}`}>
+              {format(addDays(startDate, 1), 'dd MMM yyyy', { locale: fr })}
+            </p>
+            <p className="text-[11px] text-gray-400 font-medium">
+              {format(startDate, 'HH:mm', { locale: fr })}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-amber-50/50 p-3.5 rounded-xl border border-amber-100/50">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <p className="text-[10px] text-amber-600 uppercase font-bold tracking-wider">Expiration du produit</p>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-gray-800" data-testid={`text-expiry-${inv.id}`}>
+              {format(expiryDate, 'dd MMM yyyy à HH:mm', { locale: fr })}
+            </p>
+          </div>
+        </div>
+
+        {!isExpired && (
+          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/50">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Hourglass className="w-3.5 h-3.5 text-slate-500" />
+                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Temps restant</p>
+              </div>
+              <p className="text-xs font-bold text-slate-600" data-testid={`text-progress-${inv.id}`}>{progressPercent}%</p>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 mb-2.5">
+              <div
+                className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-center gap-3" data-testid={`text-countdown-${inv.id}`}>
+              <div className="text-center">
+                <p className="text-lg font-extrabold text-slate-800">{daysRemaining}</p>
+                <p className="text-[9px] text-slate-400 uppercase font-bold">jours</p>
+              </div>
+              <span className="text-slate-300 text-lg font-bold">:</span>
+              <div className="text-center">
+                <p className="text-lg font-extrabold text-slate-800">{hoursRemaining}</p>
+                <p className="text-[9px] text-slate-400 uppercase font-bold">heures</p>
+              </div>
+              <span className="text-slate-300 text-lg font-bold">:</span>
+              <div className="text-center">
+                <p className="text-lg font-extrabold text-slate-800">{minutesRemaining}</p>
+                <p className="text-[9px] text-slate-400 uppercase font-bold">min</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div>
+            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Total gagné (estimé)</p>
+            <p className="text-base font-extrabold text-primary">{totalEarnedEstimate.toLocaleString()} FCFA</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Rendement total</p>
+            <p className="text-base font-extrabold text-gray-900">{inv.product.totalReturn.toLocaleString()} FCFA</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
