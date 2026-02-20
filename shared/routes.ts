@@ -84,6 +84,7 @@ export const api = {
         amount: z.number(),
         firstName: z.string(),
         lastName: z.string(),
+        country: z.string().optional(),
         method: z.string(),
       }),
       responses: {
@@ -139,6 +140,29 @@ export const api = {
       path: '/api/investments',
       responses: {
         200: z.array(z.custom<typeof investments.$inferSelect & { product: typeof products.$inferSelect }>()),
+      },
+    },
+  },
+  settings: {
+    public: {
+      method: 'GET' as const,
+      path: '/api/settings/public',
+      responses: {
+        200: z.array(z.custom<typeof settings.$inferSelect>()),
+      },
+    },
+  },
+  profile: {
+    updatePayment: {
+      method: 'PUT' as const,
+      path: '/api/profile/payment',
+      input: z.object({
+        paymentPhone: z.string(),
+        paymentMethod: z.string(),
+        paymentName: z.string(),
+      }),
+      responses: {
+        200: z.custom<typeof users.$inferSelect>(),
       },
     },
   },

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Investment, Product, Transaction } from "@shared/schema";
 import { api } from "@shared/routes";
 import { format, addDays } from "date-fns";
@@ -29,10 +29,40 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 
+const PAYMENT_METHODS_LIST = [
+  "TMoney", "Flooz", "MTN MoMo", "Moov Money", "Orange Money", "Wave", "Mobile Money Congo"
+];
+
 export default function Account() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [paymentPhone, setPaymentPhone] = useState(user?.paymentPhone || "");
+  const [paymentMethod, setPaymentMethod] = useState(user?.paymentMethod || "");
+  const [paymentName, setPaymentName] = useState(user?.paymentName || "");
+
+  const savePaymentMutation = useMutation({
+    mutationFn: async (data: { paymentPhone: string; paymentMethod: string; paymentName: string }) => {
+      const res = await fetch(api.profile.updatePayment.path, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Erreur de sauvegarde");
+      return res.json();
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: [api.auth.me.path] });
+      setPaymentPhone(updatedUser.paymentPhone || "");
+      setPaymentMethod(updatedUser.paymentMethod || "");
+      setPaymentName(updatedUser.paymentName || "");
+      toast({ title: "Informations de paiement sauvegardées" });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de sauvegarder" });
+    },
+  });
 
   const { data: investments, isLoading: loadingInvestments } = useQuery<(Investment & { product: Product })[]>({
     queryKey: [api.investments.list.path],
@@ -105,20 +135,82 @@ export default function Account() {
                 <Landmark className="w-8 h-8 opacity-80" />
                 <div className="text-right">
                   <p className="text-[10px] uppercase tracking-widest opacity-70">Mobile Money</p>
-                  <p className="font-bold">MTN / Orange</p>
+                  <p className="font-bold">{user?.paymentMethod || "Non configuré"}</p>
                 </div>
               </div>
-              <p className="text-xl font-mono tracking-wider mb-2">•••• •••• •••• {user?.phoneNumber?.slice(-4)}</p>
+              <p className="text-xl font-mono tracking-wider mb-2">
+                {user?.paymentPhone 
+                  ? `•••• •••• ${user.paymentPhone.slice(-4)}` 
+                  : "Aucun numéro enregistré"}
+              </p>
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-[8px] uppercase opacity-60">Titulaire</p>
-                  <p className="text-sm font-bold uppercase">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-sm font-bold uppercase">{user?.paymentName || `${user?.firstName} ${user?.lastName}`}</p>
                 </div>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/MTN_Logo.svg" className="h-6 opacity-80" alt="" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground px-2">Les retraits sont automatiquement envoyés vers le numéro utilisé lors de l'inscription.</p>
-            <Button variant="outline" className="w-full" onClick={() => setActiveTab(null)}>Retour</Button>
+
+            <Card className="border-0 shadow-lg rounded-[2rem] bg-white overflow-hidden">
+              <CardHeader className="px-6 py-4 border-b border-gray-50">
+                <CardTitle className="text-base font-black text-slate-900">Modifier mes informations de retrait</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Nom complet du titulaire</Label>
+                  <Input 
+                    placeholder="Prénom et Nom" 
+                    className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium"
+                    value={paymentName}
+                    onChange={(e) => setPaymentName(e.target.value)}
+                    data-testid="input-payment-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Numéro Mobile Money</Label>
+                  <Input 
+                    type="tel"
+                    placeholder="Ex: 90123456" 
+                    className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium"
+                    value={paymentPhone}
+                    onChange={(e) => setPaymentPhone(e.target.value)}
+                    data-testid="input-payment-phone"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Opérateur / Méthode</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PAYMENT_METHODS_LIST.map((method) => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => setPaymentMethod(method)}
+                        className={cn(
+                          "py-3 px-3 rounded-xl border text-xs font-bold transition-all",
+                          paymentMethod === method
+                            ? "bg-primary text-white border-primary shadow-md"
+                            : "bg-white border-gray-100 text-gray-600 hover:border-primary/30"
+                        )}
+                        data-testid={`button-method-${method.replace(/\s+/g, '-').toLowerCase()}`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button 
+                  className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-black rounded-2xl shadow-lg shadow-primary/20 mt-2"
+                  onClick={() => savePaymentMutation.mutate({ paymentPhone, paymentMethod, paymentName })}
+                  disabled={savePaymentMutation.isPending || !paymentPhone || !paymentMethod || !paymentName}
+                  data-testid="button-save-payment"
+                >
+                  {savePaymentMutation.isPending ? <Loader2 className="animate-spin mr-2 w-4 h-4" /> : null}
+                  Sauvegarder
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Button variant="outline" className="w-full rounded-2xl" onClick={() => setActiveTab(null)} data-testid="button-back-bank">Retour</Button>
           </div>
         );
       case "settings":

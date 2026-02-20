@@ -9,7 +9,7 @@ import { api } from "@shared/routes";
 
 export default function Support() {
   const { data: settings } = useQuery<Setting[]>({
-    queryKey: [api.admin.settings.path],
+    queryKey: [api.settings.public.path],
   });
 
   const tgChannel = settings?.find(s => s.key === 'telegram_channel')?.value || "#";

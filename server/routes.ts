@@ -188,6 +188,25 @@ export async function registerRoutes(
     });
   });
 
+  // Public settings (payment_link, telegram links - accessible to all authenticated users)
+  app.get(api.settings.public.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    const allSettings = await storage.getSettings();
+    res.json(allSettings);
+  });
+
+  // User payment info
+  app.put(api.profile.updatePayment.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    const { paymentPhone, paymentMethod, paymentName } = req.body;
+    const updated = await storage.updateUser(req.user!.id, {
+      paymentPhone,
+      paymentMethod,
+      paymentName,
+    });
+    res.json(updated);
+  });
+
   // Admin
   app.get(api.admin.stats.path, isAdmin, async (req, res) => {
     const stats = await storage.getAdminStats();

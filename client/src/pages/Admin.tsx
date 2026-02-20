@@ -454,109 +454,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="settings">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-                <CardHeader className="bg-blue-50/50 border-b border-blue-100 px-8 py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
-                      <LinkIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl font-black">Liens Sociaux</CardTitle>
-                      <CardDescription>Support & Communauté</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Canal Telegram</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="https://t.me/..." 
-                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
-                        defaultValue={settings?.find(s => s.key === 'telegram_channel')?.value}
-                        onBlur={(e) => updateSettingMutation.mutate({ key: 'telegram_channel', value: e.target.value })}
-                      />
-                      <div className="bg-sky-100 p-3 rounded-2xl text-sky-600 flex items-center">
-                        <Send className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Groupe de Discussion</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="https://t.me/join..." 
-                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
-                        defaultValue={settings?.find(s => s.key === 'telegram_group')?.value}
-                        onBlur={(e) => updateSettingMutation.mutate({ key: 'telegram_group', value: e.target.value })}
-                      />
-                      <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600 flex items-center">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Service Client (Lien)</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="https://t.me/..." 
-                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
-                        defaultValue={settings?.find(s => s.key === 'customer_service_link')?.value}
-                        onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
-                      />
-                      <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
-                        <UserIcon className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-                <CardHeader className="bg-primary/5 border-b border-primary/10 px-8 py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-xl text-primary">
-                      <Wallet className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl font-black">Paiements</CardTitle>
-                      <CardDescription>Dépôts & Bonus</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Lien de Paiement Manuel</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="https://..." 
-                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
-                        defaultValue={settings?.find(s => s.key === 'payment_link')?.value}
-                        onBlur={(e) => updateSettingMutation.mutate({ key: 'payment_link', value: e.target.value })}
-                      />
-                      <div className="bg-primary/10 p-3 rounded-2xl text-primary flex items-center">
-                        <LinkIcon className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs uppercase font-black text-muted-foreground tracking-widest">Lien Service Client</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="https://t.me/..." 
-                        className="rounded-2xl h-12 border-gray-100 bg-gray-50/50"
-                        defaultValue={settings?.find(s => s.key === 'customer_service_link')?.value}
-                        onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
-                      />
-                      <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
-                        <UserIcon className="w-5 h-5" />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminSettingsPanel settings={settings || []} onUpdate={(key, value) => updateSettingMutation.mutateAsync({ key, value })} isPending={updateSettingMutation.isPending} />
           </TabsContent>
 
           <TabsContent value="history">
@@ -635,6 +533,87 @@ function AddVIPDialog({ products, onAdd }: { products: Product[], onAdd: (id: nu
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AdminSettingsPanel({ settings, onUpdate, isPending }: { settings: Setting[], onUpdate: (key: string, value: string) => Promise<any>, isPending: boolean }) {
+  const { toast } = useToast();
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  const getVal = (key: string) => values[key] ?? settings.find(s => s.key === key)?.value ?? '';
+  const setVal = (key: string, value: string) => setValues(prev => ({ ...prev, [key]: value }));
+
+  const handleSave = async (key: string) => {
+    try {
+      await onUpdate(key, getVal(key));
+      toast({ title: "Lien mis à jour avec succès" });
+    } catch {
+      toast({ variant: "destructive", title: "Erreur de mise à jour" });
+    }
+  };
+
+  const linkFields = [
+    { key: 'payment_link', label: 'Lien de Paiement (Dépôt)', placeholder: 'https://...', description: 'Ce lien s\'affiche quand un utilisateur fait un dépôt', icon: <Wallet className="w-5 h-5" />, color: 'bg-green-100 text-green-600' },
+    { key: 'telegram_channel', label: 'Canal Telegram', placeholder: 'https://t.me/...', description: 'Lien du canal Telegram officiel', icon: <Send className="w-5 h-5" />, color: 'bg-sky-100 text-sky-600' },
+    { key: 'telegram_group', label: 'Groupe de Discussion', placeholder: 'https://t.me/join...', description: 'Lien du groupe de discussion Telegram', icon: <MessageSquare className="w-5 h-5" />, color: 'bg-indigo-100 text-indigo-600' },
+    { key: 'customer_service_link', label: 'Service Client', placeholder: 'https://t.me/...', description: 'Lien direct vers le service client', icon: <UserIcon className="w-5 h-5" />, color: 'bg-amber-100 text-amber-600' },
+  ];
+
+  return (
+    <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+      <CardHeader className="bg-blue-50/50 border-b border-blue-100 px-8 py-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
+            <LinkIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <CardTitle className="text-xl font-black">Réglages des Liens</CardTitle>
+            <CardDescription>Configurez les liens de la plateforme. Les modifications sont actives immédiatement.</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-8 space-y-6">
+        {linkFields.map((field) => (
+          <div key={field.key} className="bg-gray-50/50 p-5 rounded-[1.5rem] border border-gray-100 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl ${field.color}`}>
+                {field.icon}
+              </div>
+              <div>
+                <Label className="text-sm font-black text-slate-900">{field.label}</Label>
+                <p className="text-[10px] text-muted-foreground">{field.description}</p>
+              </div>
+            </div>
+            <Input 
+              placeholder={field.placeholder}
+              className="rounded-2xl h-12 border-gray-200 bg-white font-medium"
+              value={getVal(field.key)}
+              onChange={(e) => setVal(field.key, e.target.value)}
+              data-testid={`input-setting-${field.key}`}
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getVal(field.key) ? (
+                  <Badge className="bg-green-100 text-green-700 border-0 text-[9px] font-bold">Configuré</Badge>
+                ) : (
+                  <Badge className="bg-gray-100 text-gray-500 border-0 text-[9px] font-bold">Non configuré</Badge>
+                )}
+              </div>
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-6 h-10 shadow-sm"
+                onClick={() => handleSave(field.key)}
+                disabled={isPending}
+                data-testid={`button-save-${field.key}`}
+              >
+                {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Mettre à jour
+              </Button>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 

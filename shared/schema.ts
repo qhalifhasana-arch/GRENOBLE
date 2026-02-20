@@ -15,6 +15,9 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   isBanned: boolean("is_banned").notNull().default(false),
   withdrawalBlocked: boolean("withdrawal_blocked").notNull().default(false),
+  paymentPhone: text("payment_phone"),
+  paymentMethod: text("payment_method"),
+  paymentName: text("payment_name"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

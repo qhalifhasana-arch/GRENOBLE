@@ -1,11 +1,10 @@
-import { useDeposit } from "@/hooks/use-transactions";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Wallet, Globe, CheckCircle2, ChevronRight, Info } from "lucide-react";
+import { Loader2, Wallet, Globe, CheckCircle2, ChevronRight, Info, ExternalLink, ArrowLeft } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
@@ -21,6 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@shared/routes";
+import { Setting } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 const AMOUNTS = [3000, 5000, 10000, 20000, 50000, 100000];
 
@@ -44,9 +48,36 @@ const depositSchema = z.object({
 
 export default function Deposit() {
   const { user } = useAuth();
-  const deposit = useDeposit();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [showSummary, setShowSummary] = useState(false);
+  const [step, setStep] = useState<'form' | 'summary' | 'payment'>('form');
+  const [submittedValues, setSubmittedValues] = useState<z.infer<typeof depositSchema> | null>(null);
+
+  const { data: settings } = useQuery<Setting[]>({
+    queryKey: [api.settings.public.path],
+  });
+
+  const paymentLink = settings?.find(s => s.key === 'payment_link')?.value || '';
+
+  const depositMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", api.transactions.deposit.path, data);
+      if (!res.ok) throw new Error("Dépôt échoué");
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.transactions.list.path] });
+      setStep('payment');
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof depositSchema>>({
     resolver: zodResolver(depositSchema),
@@ -70,15 +101,91 @@ export default function Deposit() {
   };
 
   const onPreSubmit = (values: z.infer<typeof depositSchema>) => {
-    setShowSummary(true);
+    setSubmittedValues(values);
+    setStep('summary');
   };
 
   const confirmAndSubmit = () => {
-    deposit.mutate(form.getValues());
+    if (!submittedValues) return;
+    depositMutation.mutate(submittedValues);
   };
 
-  if (showSummary) {
-    const values = form.getValues();
+  const openPaymentLink = () => {
+    if (paymentLink) {
+      window.open(paymentLink, '_blank');
+    }
+  };
+
+  if (step === 'payment') {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="bg-primary px-6 pt-12 pb-8 rounded-b-[2rem] shadow-lg">
+          <h1 className="text-2xl font-bold text-white font-display mb-1 text-center" data-testid="text-payment-title">Effectuer le Paiement</h1>
+          <p className="text-green-100 text-sm text-center">Suivez les instructions ci-dessous</p>
+        </div>
+
+        <div className="p-4 -mt-6">
+          <Card className="border-0 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+            <CardHeader className="bg-green-50/50 border-b border-green-100 p-8 text-center">
+              <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <CardTitle className="text-xl font-black text-slate-900">Demande enregistrée !</CardTitle>
+              <CardDescription className="text-sm">Votre demande de dépôt de <span className="font-black text-primary">{submittedValues?.amount?.toLocaleString()} FCFA</span> a été enregistrée.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 space-y-3">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-bold text-amber-900">Instructions de paiement :</p>
+                    <ol className="text-xs text-amber-800 leading-relaxed space-y-1 list-decimal list-inside">
+                      <li>Cliquez sur le bouton ci-dessous pour ouvrir la page de paiement</li>
+                      <li>Effectuez le paiement du montant exact : <span className="font-black">{submittedValues?.amount?.toLocaleString()} FCFA</span></li>
+                      <li>Utilisez la méthode : <span className="font-black">{submittedValues?.method}</span></li>
+                      <li>Votre dépôt sera validé par l'administrateur sous peu</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {paymentLink ? (
+                  <Button
+                    onClick={openPaymentLink}
+                    className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] gap-3"
+                    data-testid="button-open-payment"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                    Procéder au paiement
+                  </Button>
+                ) : (
+                  <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
+                    <p className="text-sm font-bold text-red-700">Lien de paiement non configuré</p>
+                    <p className="text-xs text-red-600 mt-1">Veuillez contacter le support pour effectuer votre paiement.</p>
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setStep('form');
+                    setSubmittedValues(null);
+                  }}
+                  className="w-full h-12 text-muted-foreground font-bold rounded-2xl"
+                  data-testid="button-new-deposit"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Nouveau dépôt
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (step === 'summary' && submittedValues) {
     return (
       <div className="min-h-screen bg-gray-50 pb-24">
         <div className="bg-primary px-6 pt-12 pb-8 rounded-b-[2rem] shadow-lg">
@@ -96,26 +203,26 @@ export default function Deposit() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-50">
                   <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Pays choisi</span>
-                  <span className="font-black text-slate-900">{values.country}</span>
+                  <span className="font-black text-slate-900">{submittedValues.country}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-50">
                   <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Moyen de paiement</span>
-                  <Badge className="bg-primary/10 text-primary border-0 font-black px-3 py-1">{values.method}</Badge>
+                  <Badge className="bg-primary/10 text-primary border-0 font-black px-3 py-1">{submittedValues.method}</Badge>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-50">
                   <span className="text-muted-foreground text-sm font-bold uppercase tracking-wider">Investisseur</span>
-                  <span className="font-black text-slate-900">{values.firstName} {values.lastName}</span>
+                  <span className="font-black text-slate-900">{submittedValues.firstName} {submittedValues.lastName}</span>
                 </div>
                 <div className="flex justify-between items-center py-4 bg-primary/5 rounded-2xl px-4">
                   <span className="text-primary text-sm font-black uppercase tracking-widest">Montant à payer</span>
-                  <span className="text-xl font-black text-primary">{values.amount.toLocaleString()} FCFA</span>
+                  <span className="text-xl font-black text-primary">{submittedValues.amount.toLocaleString()} FCFA</span>
                 </div>
               </div>
 
               <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex gap-3">
                 <Info className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
-                  En cliquant sur le bouton ci-dessous, vous serez redirigé vers la page de paiement sécurisée de notre partenaire local.
+                  En confirmant, vous serez redirigé vers la page de paiement sécurisée pour effectuer votre transfert.
                 </p>
               </div>
 
@@ -123,13 +230,14 @@ export default function Deposit() {
                 <Button 
                   onClick={confirmAndSubmit}
                   className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-                  disabled={deposit.isPending}
+                  disabled={depositMutation.isPending}
+                  data-testid="button-confirm-deposit"
                 >
-                  {deposit.isPending ? <Loader2 className="animate-spin mr-2" /> : "Procéder au paiement"}
+                  {depositMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : "Confirmer et payer"}
                 </Button>
                 <Button 
                   variant="ghost" 
-                  onClick={() => setShowSummary(false)}
+                  onClick={() => setStep('form')}
                   className="w-full h-12 text-muted-foreground font-bold hover:bg-gray-100 rounded-2xl"
                 >
                   Modifier les informations
@@ -174,7 +282,7 @@ export default function Deposit() {
                       <FormLabel className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3 block">Choisir votre pays</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="rounded-2xl h-14 bg-gray-50 border-gray-100 font-bold text-lg">
+                          <SelectTrigger className="rounded-2xl h-14 bg-gray-50 border-gray-100 font-bold text-lg" data-testid="select-country">
                             <SelectValue placeholder="Sélectionnez un pays" />
                           </SelectTrigger>
                         </FormControl>
@@ -266,6 +374,7 @@ export default function Deposit() {
                             ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                             : "bg-white border-gray-100 text-gray-700 hover:border-primary/50"
                         )}
+                        data-testid={`button-amount-${amount}`}
                       >
                         {amount.toLocaleString()}
                       </button>
@@ -280,7 +389,7 @@ export default function Deposit() {
                     <FormItem>
                       <FormLabel>Montant personnalisé (FCFA)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} className="rounded-2xl h-14 bg-gray-50 border-gray-100 text-lg font-bold px-6" />
+                        <Input type="number" {...field} className="rounded-2xl h-14 bg-gray-50 border-gray-100 text-lg font-bold px-6" data-testid="input-amount" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -295,7 +404,7 @@ export default function Deposit() {
                       <FormItem>
                         <FormLabel>Prénom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" />
+                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" data-testid="input-firstname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -308,7 +417,7 @@ export default function Deposit() {
                       <FormItem>
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
-                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" />
+                          <Input {...field} className="rounded-2xl h-12 bg-gray-50 border-gray-100 font-medium" data-testid="input-lastname" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -319,6 +428,7 @@ export default function Deposit() {
                 <Button 
                   type="submit" 
                   className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-lg rounded-[1.5rem] shadow-xl shadow-primary/20 transition-all active:scale-[0.98] mt-4"
+                  data-testid="button-continue"
                 >
                   Continuer vers le récapitulatif
                 </Button>

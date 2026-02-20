@@ -21,7 +21,7 @@ export default function Dashboard() {
   });
 
   const { data: settings } = useQuery<Setting[]>({
-    queryKey: [api.admin.settings.path],
+    queryKey: [api.settings.public.path],
   });
 
   const dailyEarnings = investments?.reduce((sum, inv) => sum + inv.product.dailyRate, 0) || 0;

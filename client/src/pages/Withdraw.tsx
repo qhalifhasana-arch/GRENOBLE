@@ -17,7 +17,7 @@ const withdrawSchema = z.object({
   firstName: z.string().min(2, "Requis"),
   lastName: z.string().min(2, "Requis"),
   mobileNumber: z.string().min(8, "Numéro invalide"),
-  method: z.string().default("mobile_money"),
+  method: z.string().min(1, "Requis"),
 });
 
 export default function Withdraw() {
@@ -25,14 +25,18 @@ export default function Withdraw() {
   const withdraw = useWithdraw();
   const { data: transactions } = useTransactions();
   
+  const paymentNameParts = user?.paymentName?.split(' ') || [];
+  const defaultFirstName = paymentNameParts.length > 0 ? paymentNameParts[0] : (user?.firstName || "");
+  const defaultLastName = paymentNameParts.length > 1 ? paymentNameParts.slice(1).join(' ') : (user?.lastName || "");
+
   const form = useForm<z.infer<typeof withdrawSchema>>({
     resolver: zodResolver(withdrawSchema),
     defaultValues: {
       amount: 0,
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      mobileNumber: user?.phoneNumber || "",
-      method: "mobile_money",
+      firstName: defaultFirstName,
+      lastName: defaultLastName,
+      mobileNumber: user?.paymentPhone || user?.phoneNumber || "",
+      method: user?.paymentMethod || "mobile_money",
     },
   });
 
