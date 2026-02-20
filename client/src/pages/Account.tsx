@@ -173,10 +173,10 @@ export default function Account() {
               <div className="space-y-3">
                 <h4 className="font-bold text-slate-900 px-1">Fonctionnement</h4>
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2">
-                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Choisissez un pack VIP adapté à votre budget.</p>
-                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Accumulez des revenus journaliers pendant 60 jours.</p>
-                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Retirez vos gains via Mobile Money MTN ou Orange.</p>
-                  <p className="text-[11px] flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary" /> Parrainez vos amis pour gagner des commissions sur 3 niveaux.</p>
+                  <span className="text-[11px] flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary inline-block flex-shrink-0" /> Choisissez un pack VIP adapté à votre budget.</span>
+                  <span className="text-[11px] flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary inline-block flex-shrink-0" /> Accumulez des revenus journaliers pendant 60 jours.</span>
+                  <span className="text-[11px] flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary inline-block flex-shrink-0" /> Retirez vos gains via Mobile Money MTN ou Orange.</span>
+                  <span className="text-[11px] flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary inline-block flex-shrink-0" /> Parrainez vos amis pour gagner des commissions sur 3 niveaux.</span>
                 </div>
               </div>
             </div>

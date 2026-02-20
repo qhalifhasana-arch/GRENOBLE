@@ -67,6 +67,8 @@ import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+type EnrichedTransaction = Transaction & { userPhone?: string; userCountry?: string; userName?: string };
+
 export default function Admin() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
@@ -80,7 +82,7 @@ export default function Admin() {
     queryKey: [api.admin.users.path],
   });
 
-  const { data: transactions, isLoading: loadingTransactions } = useQuery<Transaction[]>({
+  const { data: transactions, isLoading: loadingTransactions } = useQuery<EnrichedTransaction[]>({
     queryKey: [api.admin.transactions.path],
   });
 
@@ -636,7 +638,7 @@ function AddVIPDialog({ products, onAdd }: { products: Product[], onAdd: (id: nu
   );
 }
 
-function TransactionTable({ transactions, onUpdate }: { transactions: Transaction[], onUpdate?: (id: number, status: string) => void }) {
+function TransactionTable({ transactions, onUpdate }: { transactions: EnrichedTransaction[], onUpdate?: (id: number, status: string) => void }) {
   if (transactions.length === 0) {
     return (
       <div className="py-12 text-center">
@@ -654,7 +656,8 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
         <TableHeader className="bg-gray-50/30">
           <TableRow>
             <TableHead className="px-8 py-4 font-black uppercase text-[10px]">Utilisateur</TableHead>
-            <TableHead className="py-4 font-black uppercase text-[10px]">Type / Montant</TableHead>
+            <TableHead className="py-4 font-black uppercase text-[10px]">Montant</TableHead>
+            <TableHead className="py-4 font-black uppercase text-[10px]">Pays</TableHead>
             <TableHead className="py-4 font-black uppercase text-[10px]">Détails</TableHead>
             <TableHead className={`py-4 font-black uppercase text-[10px] ${onUpdate ? 'text-right px-8' : 'text-left'}`}>Statut</TableHead>
           </TableRow>
@@ -663,7 +666,8 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
           {transactions.map((tx) => (
             <TableRow key={tx.id} className="hover:bg-gray-50/30 transition-colors border-b border-gray-50 last:border-0">
               <TableCell className="px-8 py-4">
-                <p className="font-black text-xs text-slate-900">ID: {tx.userId}</p>
+                <p className="font-black text-xs text-slate-900">{tx.userName || 'N/A'}</p>
+                <p className="text-[10px] text-muted-foreground font-mono">{tx.userPhone || 'N/A'}</p>
                 <p className="text-[10px] text-muted-foreground font-mono">{format(new Date(tx.createdAt || Date.now()), 'dd/MM/yy HH:mm')}</p>
               </TableCell>
               <TableCell>
@@ -673,6 +677,9 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
                   </Badge>
                   <p className="font-black text-sm text-slate-900">{tx.amount.toLocaleString()} FCFA</p>
                 </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="border-gray-200 font-bold text-[10px]">{tx.userCountry || 'N/A'}</Badge>
               </TableCell>
               <TableCell>
                 <div className="flex flex-col">
@@ -687,6 +694,7 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
                       size="sm" 
                       className="bg-green-600 hover:bg-green-700 h-9 px-4 rounded-xl text-white font-bold text-xs shadow-lg shadow-green-200"
                       onClick={() => onUpdate(tx.id, 'completed')}
+                      data-testid={`button-validate-${tx.id}`}
                     >
                       Valider
                     </Button>
@@ -695,6 +703,7 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
                       variant="ghost" 
                       className="h-9 px-4 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold text-xs"
                       onClick={() => onUpdate(tx.id, 'rejected')}
+                      data-testid={`button-reject-${tx.id}`}
                     >
                       Refuser
                     </Button>
@@ -708,6 +717,7 @@ function TransactionTable({ transactions, onUpdate }: { transactions: Transactio
                         'bg-red-100 text-red-700'
                       }`
                     }
+                    data-testid={`status-transaction-${tx.id}`}
                   >
                     {tx.status}
                   </Badge>

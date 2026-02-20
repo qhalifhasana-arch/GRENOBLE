@@ -211,8 +211,16 @@ export async function registerRoutes(
   });
 
   app.get(api.admin.transactions.path, isAdmin, async (req, res) => {
-    const transactions = await storage.getAllTransactions();
-    res.json(transactions);
+    const allTransactions = await storage.getAllTransactions();
+    const allUsers = await storage.getAllUsers();
+    const userMap = new Map(allUsers.map(u => [u.id, u]));
+    const enriched = allTransactions.map(tx => ({
+      ...tx,
+      userPhone: userMap.get(tx.userId)?.phoneNumber || 'N/A',
+      userCountry: userMap.get(tx.userId)?.country || 'N/A',
+      userName: `${userMap.get(tx.userId)?.firstName || ''} ${userMap.get(tx.userId)?.lastName || ''}`.trim() || 'N/A',
+    }));
+    res.json(enriched);
   });
 
   app.patch(api.admin.updateTransaction.path, isAdmin, async (req, res) => {
