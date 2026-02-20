@@ -4,6 +4,13 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { type User as SchemaUser } from "@shared/schema";
+
+declare global {
+  namespace Express {
+    interface User extends SchemaUser {}
+  }
+}
 
 function isAdmin(req: any, res: any, next: any) {
   if (!req.isAuthenticated() || !req.user.isAdmin) {
@@ -314,7 +321,7 @@ export async function registerRoutes(
   });
 
   app.put(api.admin.updateSetting.path, isAdmin, async (req, res) => {
-    const { key } = req.params;
+    const key = req.params.key as string;
     const { value } = req.body;
     const setting = await storage.updateSetting(key, value);
     res.json(setting);

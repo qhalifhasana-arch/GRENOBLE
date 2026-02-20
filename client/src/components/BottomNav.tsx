@@ -1,15 +1,18 @@
 import { Link, useLocation } from "wouter";
-import { Home, ShoppingBag, Users, User } from "lucide-react";
+import { Home, ShoppingBag, Users, User, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 export function BottomNav() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
     { icon: Home, label: "Accueil", href: "/dashboard" },
     { icon: ShoppingBag, label: "Produits", href: "/products" },
     { icon: Users, label: "Équipe", href: "/team" },
     { icon: User, label: "Compte", href: "/account" },
+    ...(user?.isAdmin ? [{ icon: Shield, label: "Admin", href: "/admin" }] : []),
   ];
 
   return (

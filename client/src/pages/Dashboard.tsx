@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Sprout, TrendingUp, Wallet, ArrowRight, Send, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Sprout, TrendingUp, Wallet, ArrowRight, Send, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Investment, Product, Setting } from "@shared/schema";
@@ -109,6 +109,21 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {user?.isAdmin && (
+          <Link href="/admin" className="block">
+            <div className="flex items-center gap-3 bg-purple-50 p-4 rounded-2xl border border-purple-200 hover:bg-purple-100/70 transition-all active:scale-[0.98]" data-testid="link-admin">
+              <div className="bg-purple-600 p-2.5 rounded-xl text-white">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-purple-800">Panneau Administrateur</p>
+                <p className="text-xs text-purple-600">Gérer les utilisateurs et transactions</p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-purple-400" />
+            </div>
+          </Link>
+        )}
 
         <Link href="/support" className="block">
           <div className="flex items-center gap-3 bg-sky-50 p-4 rounded-2xl border border-sky-100 hover:bg-sky-100/70 transition-all active:scale-[0.98]" data-testid="link-support">
