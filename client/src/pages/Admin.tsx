@@ -42,7 +42,8 @@ import {
   LayoutDashboard,
   Users as UsersIcon,
   History,
-  Activity
+  Activity,
+  User as UserIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -75,7 +76,7 @@ export default function Admin() {
     queryKey: [api.admin.stats.path],
   });
 
-  const { data: users, isLoading: loadingUsers } = useQuery<User[]>({
+  const { data: users, isLoading: loadingUsers } = useQuery<SchemaUser[]>({
     queryKey: [api.admin.users.path],
   });
 
@@ -503,7 +504,7 @@ export default function Admin() {
                         onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
                       />
                       <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
-                        <User className="w-5 h-5" />
+                        <UserIcon className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
@@ -547,7 +548,7 @@ export default function Admin() {
                         onBlur={(e) => updateSettingMutation.mutate({ key: 'customer_service_link', value: e.target.value })}
                       />
                       <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex items-center">
-                        <User className="w-5 h-5" />
+                        <UserIcon className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
