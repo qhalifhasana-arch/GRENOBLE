@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import heroAgricultureImg from "@/assets/images/hero-agriculture.jpg";
 
 const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom est requis"),
@@ -57,20 +58,29 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950 flex flex-col" data-testid="register-page">
-      <div className="flex-1 flex flex-col items-center px-5 py-6">
-        <div className="w-full max-w-md lg:max-w-lg space-y-5">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-18 h-18 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 mb-1">
-              <span className="text-3xl">🌱</span>
-            </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">GreenHarvest</h1>
-            <p className="text-green-300/80 text-sm font-medium">Investissement Agricole Durable</p>
-
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 backdrop-blur-sm border border-amber-400/30 text-amber-200 px-5 py-2.5 rounded-full text-sm font-bold mt-2">
-              <Gift className="w-4 h-4" />
-              Bonus d'inscription : 700 FCFA
-            </div>
+      <div className="relative w-full h-44 sm:h-52 overflow-hidden">
+        <img
+          src={heroAgricultureImg}
+          alt="Champs agricoles verdoyants"
+          className="w-full h-full object-cover"
+          data-testid="img-hero-agriculture"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-green-950/30 via-green-900/50 to-green-950" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-white/15 backdrop-blur-md rounded-2xl border border-white/25 mb-2 shadow-lg">
+            <span className="text-2xl">🌱</span>
           </div>
+          <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-lg">GreenHarvest</h1>
+          <p className="text-green-200/90 text-sm font-medium mt-1 drop-shadow">Investissement Agricole Durable</p>
+          <div className="inline-flex items-center gap-2 bg-amber-500/25 backdrop-blur-md border border-amber-400/30 text-amber-200 px-4 py-2 rounded-full text-sm font-bold mt-2 shadow-lg">
+            <Gift className="w-4 h-4" />
+            Bonus d'inscription : 700 FCFA
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center px-5 py-5">
+        <div className="w-full max-w-md lg:max-w-lg space-y-5">
 
           {!selectedCountry ? (
             <div className="space-y-4 animate-in fade-in duration-300">

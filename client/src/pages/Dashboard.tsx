@@ -8,6 +8,7 @@ import { Investment, Product, Setting } from "@shared/schema";
 import { api } from "@shared/routes";
 import { Card, CardContent } from "@/components/ui/card";
 import { getFlagForCountry } from "@/lib/countries";
+import seedlingImg from "@/assets/images/seedling-hands.jpg";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -122,18 +123,24 @@ export default function Dashboard() {
           </div>
         </Link>
 
-        <Card className="border-0 bg-gradient-to-br from-green-700 to-emerald-800 shadow-lg rounded-3xl overflow-hidden">
-          <div className="relative p-6 text-center">
-            <div className="absolute top-0 right-0 -mr-6 -mt-6 opacity-10">
-              <Sprout className="w-32 h-32 text-white" />
+        <Card className="border-0 shadow-lg rounded-3xl overflow-hidden" data-testid="card-promo-agriculture">
+          <div className="relative">
+            <img
+              src={seedlingImg}
+              alt="Jeune pousse agricole"
+              className="w-full h-48 object-cover"
+              data-testid="img-seedling"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-green-900/95 via-green-800/70 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
+              <h3 className="text-white text-xl font-extrabold mb-1.5 drop-shadow-lg">Cultivez vos revenus</h3>
+              <p className="text-green-100/80 text-sm mb-4 max-w-[240px] mx-auto leading-relaxed drop-shadow">Découvrez nos projets agricoles à haut rendement.</p>
+              <Link href="/products">
+                <Button className="bg-white text-green-800 hover:bg-green-50 rounded-xl px-6 h-12 font-bold text-sm uppercase tracking-wider shadow-md transition-all active:scale-95" data-testid="button-catalog">
+                  Voir le Catalogue VIP <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
             </div>
-            <h3 className="text-white text-xl font-extrabold mb-1.5 relative z-10">Cultivez vos revenus</h3>
-            <p className="text-green-200/70 text-sm mb-5 max-w-[220px] mx-auto leading-relaxed">Découvrez nos projets agricoles à haut rendement.</p>
-            <Link href="/products">
-              <Button className="bg-white text-green-800 hover:bg-green-50 rounded-xl px-6 h-12 font-bold text-sm uppercase tracking-wider shadow-md relative z-10 transition-all active:scale-95" data-testid="button-catalog">
-                Voir le Catalogue VIP <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
           </div>
         </Card>
       </div>

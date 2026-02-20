@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import heroAgricultureImg from "@/assets/images/hero-agriculture.jpg";
 
 const loginSchema = z.object({
   phoneNumber: z.string().min(1, "Le numéro de téléphone est requis"),
@@ -41,15 +42,25 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950 flex flex-col" data-testid="login-page">
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8">
-        <div className="w-full max-w-md lg:max-w-lg space-y-6">
-          <div className="text-center space-y-3 mb-2">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 mb-2">
-              <span className="text-4xl">🌱</span>
-            </div>
-            <h1 className="text-4xl font-black text-white tracking-tight">GreenHarvest</h1>
-            <p className="text-green-300/80 text-base font-medium">Investissement Agricole Durable</p>
+      <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+        <img
+          src={heroAgricultureImg}
+          alt="Champs agricoles verdoyants"
+          className="w-full h-full object-cover"
+          data-testid="img-hero-agriculture"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-green-950/40 via-green-900/60 to-green-950" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/15 backdrop-blur-md rounded-2xl border border-white/25 mb-3 shadow-lg">
+            <span className="text-3xl">🌱</span>
           </div>
+          <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-lg">GreenHarvest</h1>
+          <p className="text-green-200/90 text-base font-medium mt-1 drop-shadow">Investissement Agricole Durable</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center px-5 py-6">
+        <div className="w-full max-w-md lg:max-w-lg space-y-6">
 
           {!selectedCountry ? (
             <div className="space-y-4 animate-in fade-in duration-300">
@@ -168,7 +179,7 @@ export default function Login() {
             </div>
           )}
         </div>
-      </div>
+        </div>
     </div>
   );
 }
