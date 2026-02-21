@@ -40,9 +40,16 @@ export default function Team() {
           <h1 className="text-2xl font-extrabold text-white mb-1">Mon Équipe</h1>
           <p className="text-white/70 text-sm">Invitez et gagnez des commissions automatiques</p>
 
-          <div className="mt-6 bg-white/15 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center">
-            <p className="text-xs uppercase tracking-widest font-bold text-white/60 mb-1">Commissions Totales</p>
-            <h2 className="text-4xl font-extrabold text-white" data-testid="text-total-commission">{stats?.totalCommission?.toLocaleString() || 0} <span className="text-base font-semibold text-white/70">FCFA</span></h2>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="bg-white/15 backdrop-blur-sm p-5 rounded-2xl border border-white/20 text-center">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-1">Commissions Totales</p>
+              <h2 className="text-2xl font-extrabold text-white" data-testid="text-total-commission">{stats?.totalCommission?.toLocaleString() || 0} <span className="text-sm font-semibold text-white/70">FCFA</span></h2>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm p-5 rounded-2xl border border-white/20 text-center">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-white/60 mb-1">Total Filleuls</p>
+              <h2 className="text-2xl font-extrabold text-white" data-testid="text-total-referrals">{((stats?.level1 || 0) + (stats?.level2 || 0) + (stats?.level3 || 0)).toLocaleString()}</h2>
+              <p className="text-[10px] text-white/50 font-semibold mt-0.5">sur 3 niveaux</p>
+            </div>
           </div>
         </div>
       </div>
