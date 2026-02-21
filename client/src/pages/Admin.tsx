@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { type User as SchemaUser, type Transaction, type Setting, type Product } from "@shared/schema";
 import { api } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
+import { getFlagForCountry } from "@/lib/countries";
 import { 
   Card, 
   CardContent, 
@@ -468,47 +469,51 @@ export default function Admin() {
 
           <TabsContent value="registrations">
             <Card className="border-0 shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-              <CardHeader className="px-8 py-6 border-b border-gray-50 bg-blue-50/30">
-                <CardTitle className="text-xl font-black text-slate-900">Toutes les Inscriptions</CardTitle>
-                <CardDescription>Liste exhaustive des utilisateurs enregistrés</CardDescription>
+              <CardHeader className="px-6 py-5 border-b border-gray-50 bg-blue-50/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-black text-slate-900">Nouvelles Inscriptions</CardTitle>
+                    <CardDescription>Tous les comptes créés ({users?.length || 0} au total)</CardDescription>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-2xl text-blue-600">
+                    <UserPlus className="w-6 h-6" />
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-gray-50/50">
-                    <TableRow>
-                      <TableHead className="px-8 py-4 font-black uppercase text-[10px]">Utilisateur</TableHead>
-                      <TableHead className="py-4 font-black uppercase text-[10px]">Pays</TableHead>
-                      <TableHead className="py-4 font-black uppercase text-[10px]">Inscrit le</TableHead>
-                      <TableHead className="py-4 font-black uppercase text-[10px]">Solde Actuel</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users?.map((u) => (
-                      <TableRow key={u.id} className="hover:bg-gray-50/50 transition-colors">
-                        <TableCell className="px-8 py-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10 border border-gray-100">
-                              <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-xs uppercase">{u.firstName[0]}{u.lastName[0]}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-bold text-sm text-slate-900 leading-none mb-1">{u.firstName} {u.lastName}</p>
-                              <p className="text-[11px] text-muted-foreground font-mono">{u.phoneNumber}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="border-gray-200 font-bold text-[10px]">{u.country}</Badge>
-                        </TableCell>
-                        <TableCell className="text-[11px] text-muted-foreground">
-                          {format(new Date(u.createdAt || Date.now()), 'dd/MM/yyyy HH:mm')}
-                        </TableCell>
-                        <TableCell>
-                          <p className="font-black text-sm text-primary">{u.balance.toLocaleString()} FCFA</p>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+                {users && [...users].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).map((u, index) => (
+                  <div key={u.id} className="bg-gray-50 rounded-2xl p-4 border border-gray-100 hover:bg-gray-100/50 transition-colors" data-testid={`registration-card-${u.id}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <Avatar className="w-11 h-11 border-2 border-blue-200">
+                          <AvatarFallback className="bg-blue-100 text-blue-700 font-bold text-sm uppercase">{u.firstName[0]}{u.lastName[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center">#{index + 1}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-extrabold text-sm text-slate-900">{u.firstName} {u.lastName}</p>
+                        <p className="text-base font-black text-blue-600 mt-0.5" data-testid={`registration-phone-${u.id}`}>{u.phoneNumber}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <Badge variant="outline" className="border-gray-200 font-bold text-[10px] gap-1">
+                            {getFlagForCountry(u.country)} {u.country}
+                          </Badge>
+                          <span className="text-[10px] text-gray-400 font-semibold">
+                            {format(new Date(u.createdAt || Date.now()), "dd/MM/yyyy 'à' HH:mm")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-xs text-gray-400 font-bold">Solde</p>
+                        <p className="font-black text-sm text-emerald-600">{u.balance.toLocaleString()} F</p>
+                      </div>
+                    </div>
+                    {u.referrerId && (
+                      <div className="mt-2 pt-2 border-t border-gray-200/60">
+                        <p className="text-[10px] text-gray-400 font-semibold">Parrainé par : <span className="text-slate-600 font-bold">{users?.find(p => p.id === u.referrerId)?.firstName} {users?.find(p => p.id === u.referrerId)?.lastName}</span></p>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
