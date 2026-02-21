@@ -29,20 +29,23 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  const isProduction = app.get("env") === "production" || process.env.REPL_SLUG;
+
+  if (isProduction) {
+    app.set("trust proxy", 1);
+  }
+
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "greenix_secret",
     resave: false,
     saveUninitialized: false,
-    store: (session.MemoryStore ? new session.MemoryStore() : undefined),
     cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: app.get("env") === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProduction ? true : false,
+      httpOnly: true,
+      sameSite: isProduction ? "none" : "lax",
     },
   };
-
-  if (app.get("env") === "production") {
-    app.set("trust proxy", 1);
-  }
 
   app.use(session(sessionSettings));
   app.use(passport.initialize());
@@ -100,12 +103,13 @@ export function setupAuth(app: Express) {
         ...req.body,
         password: hashedPassword,
         referrerId,
-        balance: 700, // Bonus d'inscription
+        balance: 700,
       });
 
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(user);
+        const { password: _, ...safeUser } = user;
+        res.status(201).json(safeUser);
       });
     } catch (err) {
       next(err);
@@ -120,7 +124,8 @@ export function setupAuth(app: Express) {
       }
       req.login(user, (loginErr) => {
         if (loginErr) return next(loginErr);
-        res.status(200).json(user);
+        const { password: _, ...safeUser } = user;
+        res.status(200).json(safeUser);
       });
     })(req, res, next);
   });
@@ -135,10 +140,12 @@ export function setupAuth(app: Express) {
   app.get("/api/user", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).json({ message: "Non authentifié" });
     const user = await storage.getUser(req.user!.id);
-    if (user?.isBanned) {
+    if (!user) return res.status(401).json({ message: "Non authentifié" });
+    if (user.isBanned) {
       req.logout(() => {});
       return res.status(403).json({ message: "Votre compte a été bloqué." });
     }
-    res.json(user);
+    const { password: _, ...safeUser } = user;
+    res.json(safeUser);
   });
 }

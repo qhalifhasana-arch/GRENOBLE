@@ -12,6 +12,12 @@ declare global {
   }
 }
 
+function stripPassword(user: any) {
+  if (!user) return user;
+  const { password, ...safe } = user;
+  return safe;
+}
+
 function isAdmin(req: any, res: any, next: any) {
   if (!req.isAuthenticated() || !req.user.isAdmin) {
     return res.status(403).json({ message: "Non autorisé" });
@@ -249,7 +255,7 @@ export async function registerRoutes(
       paymentMethod,
       paymentName,
     });
-    res.json(updated);
+    res.json(stripPassword(updated));
   });
 
   // Admin
@@ -271,7 +277,8 @@ export async function registerRoutes(
 
   app.get(api.admin.users.path, isAdmin, async (req, res) => {
     const users = await storage.getAllUsers();
-    res.json(users);
+    const safeUsers = users.map(({ password, ...u }) => u);
+    res.json(safeUsers);
   });
 
   app.get(api.admin.transactions.path, isAdmin, async (req, res) => {
@@ -312,7 +319,7 @@ export async function registerRoutes(
   app.patch(api.admin.updateUser.path, isAdmin, async (req, res) => {
     const { id } = req.params;
     const user = await storage.updateUser(Number(id), req.body);
-    res.json(user);
+    res.json(stripPassword(user));
   });
 
   app.get(api.admin.settings.path, isAdmin, async (req, res) => {
@@ -368,7 +375,7 @@ export async function registerRoutes(
       });
     }
 
-    res.json(updatedUser);
+    res.json(stripPassword(updatedUser));
   });
 
   return httpServer;
