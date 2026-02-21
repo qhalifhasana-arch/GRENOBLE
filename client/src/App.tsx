@@ -4,19 +4,19 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Component, ErrorInfo, ReactNode, lazy, Suspense } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 
-const Register = lazy(() => import("@/pages/Register"));
-const Login = lazy(() => import("@/pages/Login"));
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const Products = lazy(() => import("@/pages/Products"));
-const Deposit = lazy(() => import("@/pages/Deposit"));
-const Withdraw = lazy(() => import("@/pages/Withdraw"));
-const Team = lazy(() => import("@/pages/Team"));
-const Account = lazy(() => import("@/pages/Account"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const Support = lazy(() => import("@/pages/Support"));
-const NotFound = lazy(() => import("@/pages/not-found"));
+import Register from "@/pages/Register";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import Products from "@/pages/Products";
+import Deposit from "@/pages/Deposit";
+import Withdraw from "@/pages/Withdraw";
+import Team from "@/pages/Team";
+import Account from "@/pages/Account";
+import Admin from "@/pages/Admin";
+import Support from "@/pages/Support";
+import NotFound from "@/pages/not-found";
 
 function PageLoader() {
   return (
@@ -49,7 +49,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-6 text-center">
           <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full">
             <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl">!</span>
             </div>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Erreur d'affichage</h2>
             <p className="text-sm text-gray-500 mb-4">Une erreur est survenue. Veuillez rafraîchir la page.</p>
@@ -71,7 +71,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
 }
 
-function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType, adminOnly?: boolean }) {
+function ProtectedRoute({ component: Comp, adminOnly = false }: { component: React.ComponentType, adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -88,45 +88,43 @@ function ProtectedRoute({ component: Component, adminOnly = false }: { component
 
   return (
     <ErrorBoundary>
-      <Component />
+      <Comp />
     </ErrorBoundary>
   );
 }
 
 function AppRouter() {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Switch>
-        <Route path="/" component={Register} />
-        <Route path="/register" component={Register} />
-        <Route path="/login" component={Login} />
-        <Route path="/dashboard">
-          <ProtectedRoute component={Dashboard} />
-        </Route>
-        <Route path="/products">
-          <ProtectedRoute component={Products} />
-        </Route>
-        <Route path="/deposit">
-          <ProtectedRoute component={Deposit} />
-        </Route>
-        <Route path="/withdraw">
-          <ProtectedRoute component={Withdraw} />
-        </Route>
-        <Route path="/team">
-          <ProtectedRoute component={Team} />
-        </Route>
-        <Route path="/account">
-          <ProtectedRoute component={Account} />
-        </Route>
-        <Route path="/admin">
-          <ProtectedRoute component={Admin} adminOnly />
-        </Route>
-        <Route path="/support">
-          <ProtectedRoute component={Support} />
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <Switch>
+      <Route path="/" component={Register} />
+      <Route path="/register" component={Register} />
+      <Route path="/login" component={Login} />
+      <Route path="/dashboard">
+        <ProtectedRoute component={Dashboard} />
+      </Route>
+      <Route path="/products">
+        <ProtectedRoute component={Products} />
+      </Route>
+      <Route path="/deposit">
+        <ProtectedRoute component={Deposit} />
+      </Route>
+      <Route path="/withdraw">
+        <ProtectedRoute component={Withdraw} />
+      </Route>
+      <Route path="/team">
+        <ProtectedRoute component={Team} />
+      </Route>
+      <Route path="/account">
+        <ProtectedRoute component={Account} />
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute component={Admin} adminOnly />
+      </Route>
+      <Route path="/support">
+        <ProtectedRoute component={Support} />
+      </Route>
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
