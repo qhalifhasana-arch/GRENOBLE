@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Sprout, TrendingUp, Wallet, ArrowRight, Send, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
+import { Sprout, TrendingUp, Wallet, ArrowRight, Send, Plus, Banknote, Shield } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Investment, Product, Setting } from "@shared/schema";
@@ -68,24 +68,24 @@ export default function Dashboard() {
       <div className="px-5 -mt-8 relative z-10 space-y-5 max-w-2xl mx-auto">
         <div className="grid grid-cols-2 gap-3">
           <Link href="/deposit" className="block">
-            <div className="bg-white rounded-2xl p-5 shadow-md border border-gray-100/80 flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-deposit">
-              <div className="bg-green-100 p-3.5 rounded-xl text-green-700">
-                <ArrowUpRight className="w-6 h-6" />
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-5 shadow-lg flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-deposit">
+              <div className="bg-white/25 p-3 rounded-xl">
+                <Plus className="w-6 h-6 text-white stroke-[3]" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-widest font-bold text-gray-400">Recharger</p>
-                <p className="text-lg font-extrabold text-gray-900">Dépôt</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/70">Recharger</p>
+                <p className="text-lg font-extrabold text-white">Dépôt</p>
               </div>
             </div>
           </Link>
           <Link href="/withdraw" className="block">
-            <div className="bg-white rounded-2xl p-5 shadow-md border border-gray-100/80 flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-withdraw">
-              <div className="bg-amber-100 p-3.5 rounded-xl text-amber-700">
-                <ArrowDownLeft className="w-6 h-6" />
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 shadow-lg flex items-center gap-3 active:scale-[0.97] transition-transform" data-testid="button-withdraw">
+              <div className="bg-white/25 p-3 rounded-xl">
+                <Banknote className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-widest font-bold text-gray-400">Encaisser</p>
-                <p className="text-lg font-extrabold text-gray-900">Retrait</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/70">Encaisser</p>
+                <p className="text-lg font-extrabold text-white">Retrait</p>
               </div>
             </div>
           </Link>
