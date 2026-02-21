@@ -4,19 +4,30 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode, lazy, Suspense } from "react";
 
-import Register from "@/pages/Register";
-import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
-import Products from "@/pages/Products";
-import Deposit from "@/pages/Deposit";
-import Withdraw from "@/pages/Withdraw";
-import Team from "@/pages/Team";
-import Account from "@/pages/Account";
-import Admin from "@/pages/Admin";
-import Support from "@/pages/Support";
-import NotFound from "@/pages/not-found";
+const Register = lazy(() => import("@/pages/Register"));
+const Login = lazy(() => import("@/pages/Login"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Products = lazy(() => import("@/pages/Products"));
+const Deposit = lazy(() => import("@/pages/Deposit"));
+const Withdraw = lazy(() => import("@/pages/Withdraw"));
+const Team = lazy(() => import("@/pages/Team"));
+const Account = lazy(() => import("@/pages/Account"));
+const Admin = lazy(() => import("@/pages/Admin"));
+const Support = lazy(() => import("@/pages/Support"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-gray-400 font-semibold">Chargement...</p>
+      </div>
+    </div>
+  );
+}
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -64,11 +75,7 @@ function ProtectedRoute({ component: Component, adminOnly = false }: { component
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!user) {
@@ -88,36 +95,38 @@ function ProtectedRoute({ component: Component, adminOnly = false }: { component
 
 function AppRouter() {
   return (
-    <Switch>
-      <Route path="/" component={Register} />
-      <Route path="/register" component={Register} />
-      <Route path="/login" component={Login} />
-      <Route path="/dashboard">
-        <ProtectedRoute component={Dashboard} />
-      </Route>
-      <Route path="/products">
-        <ProtectedRoute component={Products} />
-      </Route>
-      <Route path="/deposit">
-        <ProtectedRoute component={Deposit} />
-      </Route>
-      <Route path="/withdraw">
-        <ProtectedRoute component={Withdraw} />
-      </Route>
-      <Route path="/team">
-        <ProtectedRoute component={Team} />
-      </Route>
-      <Route path="/account">
-        <ProtectedRoute component={Account} />
-      </Route>
-      <Route path="/admin">
-        <ProtectedRoute component={Admin} adminOnly />
-      </Route>
-      <Route path="/support">
-        <ProtectedRoute component={Support} />
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={Register} />
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route path="/dashboard">
+          <ProtectedRoute component={Dashboard} />
+        </Route>
+        <Route path="/products">
+          <ProtectedRoute component={Products} />
+        </Route>
+        <Route path="/deposit">
+          <ProtectedRoute component={Deposit} />
+        </Route>
+        <Route path="/withdraw">
+          <ProtectedRoute component={Withdraw} />
+        </Route>
+        <Route path="/team">
+          <ProtectedRoute component={Team} />
+        </Route>
+        <Route path="/account">
+          <ProtectedRoute component={Account} />
+        </Route>
+        <Route path="/admin">
+          <ProtectedRoute component={Admin} adminOnly />
+        </Route>
+        <Route path="/support">
+          <ProtectedRoute component={Support} />
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
