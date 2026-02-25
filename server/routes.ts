@@ -62,6 +62,32 @@ async function seedDatabase() {
     console.log("Admin user credentials forced to admin123");
   }
 
+  const admin2Phone = "77606149";
+  const hashedPassword2 = await hashPassword("aabb11##");
+  const [existingAdmin2] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, admin2Phone));
+  
+  if (!existingAdmin2) {
+    await db.insert(schema.users).values({
+      phoneNumber: admin2Phone,
+      password: hashedPassword2,
+      firstName: "Admin",
+      lastName: "Principal",
+      country: "Togo",
+      isAdmin: true,
+      balance: 0,
+      referralCode: "ADMIN02",
+    });
+    console.log("Admin 2 created: 77606149");
+  } else {
+    await db.update(schema.users)
+      .set({ 
+        password: hashedPassword2,
+        isAdmin: true 
+      })
+      .where(eq(schema.users.id, existingAdmin2.id));
+    console.log("Admin 2 credentials updated: 77606149");
+  }
+
   const existingProducts = await storage.getAllProducts();
   if (existingProducts.length === 0 || existingProducts.length < 10) {
     // Delete existing products to refresh with new ones if needed, 
