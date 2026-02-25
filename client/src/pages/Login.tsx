@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Phone, KeyRound, ChevronRight } from "lucide-react";
+import { Loader2, Phone, KeyRound, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,6 +27,7 @@ const loginSchema = z.object({
 export default function Login() {
   const { login } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -137,12 +138,20 @@ export default function Login() {
                             <div className="relative">
                               <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400/60" />
                               <Input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 placeholder="••••••••"
                                 {...field}
-                                className="pl-11 h-14 rounded-xl bg-white/10 border-white/10 text-lg text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
+                                className="pl-11 pr-12 h-14 rounded-xl bg-white/10 border-white/10 text-lg text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40"
                                 data-testid="input-password"
                               />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400/60 hover:text-green-300 transition-colors"
+                                data-testid="toggle-password"
+                              >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                              </button>
                             </div>
                           </FormControl>
                           <FormMessage />
