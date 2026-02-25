@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, Phone, KeyRound, UserCircle, ChevronRight, ArrowLeft, Gift } from "lucide-react";
+import { Loader2, Phone, KeyRound, UserCircle, ChevronRight, ArrowLeft, Gift, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
@@ -17,6 +17,7 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const refCode = useMemo(() => {
     try {
@@ -249,14 +250,22 @@ export default function Register() {
                     <div className="relative">
                       <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400/60 pointer-events-none" />
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         autoComplete="new-password"
-                        className="w-full h-12 rounded-xl bg-white/10 border border-white/10 text-base text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40 focus:outline-none pl-10 pr-4"
+                        className="w-full h-12 rounded-xl bg-white/10 border border-white/10 text-base text-white placeholder:text-white/30 focus:bg-white/15 focus:border-green-400/40 focus:outline-none pl-10 pr-12"
                         data-testid="input-password"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400/60 hover:text-green-300 transition-colors"
+                        data-testid="toggle-password"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
                     </div>
                   </div>
 
