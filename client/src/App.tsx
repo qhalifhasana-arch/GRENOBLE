@@ -56,7 +56,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
             <button
               onClick={() => {
                 this.setState({ hasError: false, error: null });
-                window.location.href = "/login";
+                window.location.reload();
               }}
               className="w-full py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-colors"
               data-testid="button-reload"

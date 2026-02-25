@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter (lightweight React router)
 - **State Management**: TanStack React Query for server state
 - **Styling**: Tailwind CSS with shadcn/ui component library (New York style)
-- **Forms**: React Hook Form with Zod validation
+- **Forms**: React Hook Form with Zod validation (protected pages), native useState inputs (Register page for mobile stability)
 - **Build Tool**: Vite with custom Replit plugins for development
 
 The frontend follows a mobile-first design pattern with a green/emerald color theme using Plus Jakarta Sans display font. Pages are organized in `client/src/pages/` with shared components in `client/src/components/`. Custom hooks in `client/src/hooks/` handle authentication, data fetching, and UI state.
@@ -23,7 +23,7 @@ The frontend follows a mobile-first design pattern with a green/emerald color th
 ### Country System
 - **Country data**: Centralized in `client/src/lib/countries.ts` with flags, phone prefixes, and payment methods per country
 - **Country selection**: Required on both Login and Register pages before form fields (card grid with flags)
-- **Supported countries**: Togo, Bénin, Sénégal, Côte d'Ivoire, Burkina Faso, Mali, Congo-Brazzaville
+- **Supported countries**: Togo, Bénin, Sénégal, Côte d'Ivoire, Burkina Faso, Mali, Congo-Brazzaville, Congo RDC
 - **Dynamic flags**: Dashboard and Account pages show user's country flag using `getFlagForCountry()` helper
 - **Payment methods per country**: Deposit page shows only payment methods available in selected country
 
