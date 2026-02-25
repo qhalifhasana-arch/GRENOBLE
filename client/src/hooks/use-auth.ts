@@ -11,11 +11,14 @@ export function useAuth() {
   const userQuery = useQuery({
     queryKey: [api.auth.me.path],
     queryFn: async () => {
-      const res = await fetch(api.auth.me.path);
+      const res = await fetch(api.auth.me.path, { credentials: "include" });
       if (res.status === 401) return null;
       if (!res.ok) throw new Error("Failed to fetch user");
       return await res.json();
     },
+    refetchOnWindowFocus: false,
+    retry: false,
+    staleTime: 60000,
   });
 
   const loginMutation = useMutation({
