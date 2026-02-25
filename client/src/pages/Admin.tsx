@@ -80,14 +80,20 @@ export default function Admin() {
 
   const { data: adminStats } = useQuery<{ registrationsToday: number; depositsToday: number }>({
     queryKey: [api.admin.stats.path],
+    refetchInterval: 15000,
+    staleTime: 5000,
   });
 
-  const { data: users, isLoading: loadingUsers } = useQuery<SchemaUser[]>({
+  const { data: users, isLoading: loadingUsers, isError: usersError } = useQuery<SchemaUser[]>({
     queryKey: [api.admin.users.path],
+    refetchInterval: 15000,
+    staleTime: 5000,
   });
 
-  const { data: transactions, isLoading: loadingTransactions } = useQuery<EnrichedTransaction[]>({
+  const { data: transactions, isLoading: loadingTransactions, isError: transactionsError } = useQuery<EnrichedTransaction[]>({
     queryKey: [api.admin.transactions.path],
+    refetchInterval: 15000,
+    staleTime: 5000,
   });
 
   const { data: products } = useQuery<Product[]>({
@@ -96,6 +102,8 @@ export default function Admin() {
 
   const { data: settings } = useQuery<Setting[]>({
     queryKey: [api.admin.settings.path],
+    refetchInterval: 30000,
+    staleTime: 10000,
   });
 
   const updateTransactionMutation = useMutation({
@@ -104,6 +112,7 @@ export default function Admin() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update transaction");
       return res.json();
@@ -122,6 +131,7 @@ export default function Admin() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update user");
       return res.json();
@@ -138,6 +148,7 @@ export default function Admin() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update setting");
       return res.json();
@@ -154,6 +165,7 @@ export default function Admin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, amount }),
+        credentials: "include",
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: "Erreur" }));
@@ -178,6 +190,7 @@ export default function Admin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, productId, bypassBalance: true }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to add VIP");
       return res.json();
@@ -203,6 +216,19 @@ export default function Admin() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (usersError || transactionsError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white gap-4 p-6">
+        <XCircle className="w-12 h-12 text-red-500" />
+        <p className="text-lg font-semibold text-gray-800">Session expirée</p>
+        <p className="text-gray-500 text-center">Veuillez vous reconnecter pour accéder au panneau admin.</p>
+        <Button onClick={() => window.location.href = "/login"} className="bg-emerald-600 hover:bg-emerald-700">
+          Se reconnecter
+        </Button>
       </div>
     );
   }
