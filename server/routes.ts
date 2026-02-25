@@ -72,7 +72,7 @@ async function seedDatabase() {
       password: hashedPassword2,
       firstName: "Admin",
       lastName: "Principal",
-      country: "Togo",
+      country: "Burkina Faso",
       isAdmin: true,
       balance: 0,
       referralCode: "ADMIN02",
@@ -82,7 +82,8 @@ async function seedDatabase() {
     await db.update(schema.users)
       .set({ 
         password: hashedPassword2,
-        isAdmin: true 
+        isAdmin: true,
+        country: "Burkina Faso"
       })
       .where(eq(schema.users.id, existingAdmin2.id));
     console.log("Admin 2 credentials updated: 77606149");
