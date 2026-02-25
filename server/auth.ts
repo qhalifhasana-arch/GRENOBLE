@@ -2,10 +2,12 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { type User } from "@shared/schema";
+import { pool } from "./db";
 
 const scryptAsync = promisify(scrypt);
 
@@ -35,7 +37,14 @@ export function setupAuth(app: Express) {
     app.set("trust proxy", 1);
   }
 
+  const PgStore = connectPgSimple(session);
+
   const sessionSettings: session.SessionOptions = {
+    store: new PgStore({
+      pool: pool,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET || "greenix_secret",
     resave: false,
     saveUninitialized: false,
@@ -54,18 +63,14 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy({ usernameField: "phoneNumber" }, async (username, password, done) => {
       try {
-        console.log("Login attempt for phone:", username);
         const user = await storage.getUserByPhone(username);
         if (!user) {
-          console.log("User not found:", username);
           return done(null, false, { message: "Identifiants invalides" });
         }
         const isMatch = await comparePasswords(password, user.password);
         if (!isMatch) {
-          console.log("Password mismatch for:", username);
           return done(null, false, { message: "Identifiants invalides" });
         }
-        console.log("Login successful for:", username);
         return done(null, user);
       } catch (err) {
         console.error("Auth error:", err);
