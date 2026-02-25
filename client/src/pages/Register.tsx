@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2, Phone, KeyRound, UserCircle, ChevronRight, ArrowLeft, Gift } from "lucide-react";
@@ -16,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
-import { cn } from "@/lib/utils";
 import heroAgricultureImg from "@/assets/images/hero-agriculture.jpg";
 
 const registerSchema = z.object({
@@ -32,8 +31,14 @@ export default function Register() {
   const { register } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const refCode = urlParams.get("ref") || "";
+  const refCode = useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("ref") || "";
+    } catch {
+      return "";
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -57,8 +62,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950 flex flex-col" data-testid="register-page">
-      <div className="relative w-full h-44 sm:h-52 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-green-950 via-green-900 to-emerald-950" data-testid="register-page">
+      <div className="relative w-full h-44 sm:h-52 overflow-hidden flex-shrink-0">
         <img
           src={heroAgricultureImg}
           alt="Champs agricoles verdoyants"
@@ -79,28 +84,37 @@ export default function Register() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center px-5 py-5">
-        <div className="w-full max-w-md lg:max-w-lg space-y-5">
+      <div className="px-5 py-5 pb-10">
+        <div className="w-full max-w-md lg:max-w-lg mx-auto space-y-5">
+
+          {refCode && !selectedCountry && (
+            <div className="flex items-center gap-2 bg-green-800/60 border border-green-600/30 rounded-xl px-4 py-3" data-testid="referral-badge">
+              <Gift className="w-4 h-4 text-green-300 flex-shrink-0" />
+              <p className="text-green-200 text-sm font-medium">
+                Vous avez été invité ! Code : <span className="text-white font-bold">{refCode}</span>
+              </p>
+            </div>
+          )}
 
           {!selectedCountry ? (
-            <div className="space-y-4 animate-in fade-in duration-300">
+            <div className="space-y-4">
               <div className="text-center mb-1">
                 <h2 className="text-xl font-bold text-white mb-1">D'où venez-vous ?</h2>
-                <p className="text-green-300/60 text-sm">Choisissez votre pays pour créer votre compte</p>
+                <p className="text-green-300/70 text-sm">Choisissez votre pays pour créer votre compte</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-2 gap-3" data-testid="country-grid">
                 {COUNTRIES.map((country) => (
                   <button
                     key={country.code}
                     type="button"
                     onClick={() => handleCountrySelect(country)}
-                    className="bg-white/10 backdrop-blur-sm border border-white/15 hover:bg-white/20 hover:border-white/30 rounded-2xl p-5 flex flex-col items-center gap-2 transition-all active:scale-95 group"
+                    className="bg-green-800/50 border-2 border-green-600/30 hover:bg-green-700/60 hover:border-green-500/50 rounded-2xl p-4 flex flex-col items-center gap-2 transition-colors active:scale-95"
                     data-testid={`country-select-${country.code}`}
                   >
-                    <span className="text-5xl group-hover:scale-110 transition-transform">{country.flag}</span>
+                    <span className="text-4xl leading-none">{country.flag}</span>
                     <span className="text-white text-sm font-bold">{country.name}</span>
-                    <span className="text-green-300/50 text-xs">{country.phonePrefix}</span>
+                    <span className="text-green-300/60 text-xs">{country.phonePrefix}</span>
                   </button>
                 ))}
               </div>
@@ -114,14 +128,14 @@ export default function Register() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+            <div className="space-y-4">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedCountry(null);
                   form.setValue("country", "");
                 }}
-                className="flex items-center gap-3 w-full bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-5 hover:bg-white/15 transition-all"
+                className="flex items-center gap-3 w-full bg-green-800/50 border-2 border-green-600/30 rounded-2xl p-5 hover:bg-green-700/60 transition-colors"
                 data-testid="button-change-country"
               >
                 <span className="text-4xl">{selectedCountry.flag}</span>
@@ -129,13 +143,13 @@ export default function Register() {
                   <p className="text-white font-bold text-base">{selectedCountry.name}</p>
                   <p className="text-green-300/60 text-sm">{selectedCountry.phonePrefix}</p>
                 </div>
-                <div className="flex items-center gap-1 text-green-300/40 text-sm font-medium">
+                <div className="flex items-center gap-1 text-green-300/50 text-sm font-medium">
                   <ArrowLeft className="w-3 h-3" />
                   Changer
                 </div>
               </button>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-7 border border-white/10 space-y-5">
+              <div className="bg-green-800/40 rounded-3xl p-7 border border-green-600/20 space-y-5">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                     <div className="grid grid-cols-2 gap-3">
