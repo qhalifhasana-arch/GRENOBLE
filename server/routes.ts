@@ -34,15 +34,12 @@ import { eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 async function seedDatabase() {
-  const adminPhone = "99999992";
-  const hashedPassword = await hashPassword("admin123");
-  
-  // Directly use db to ensure clean state for admin
-  const [existingAdmin] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, adminPhone));
+  const [existingAdmin] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, "99999992"));
   
   if (!existingAdmin) {
+    const hashedPassword = await hashPassword("admin123");
     await db.insert(schema.users).values({
-      phoneNumber: adminPhone,
+      phoneNumber: "99999992",
       password: hashedPassword,
       firstName: "Admin",
       lastName: "System",
@@ -52,23 +49,21 @@ async function seedDatabase() {
       referralCode: "ADMIN01",
     });
     console.log("Admin user created: 99999992");
-  } else {
+  } else if (!existingAdmin.isAdmin) {
     await db.update(schema.users)
-      .set({ 
-        password: hashedPassword,
-        isAdmin: true 
-      })
+      .set({ isAdmin: true })
       .where(eq(schema.users.id, existingAdmin.id));
-    console.log("Admin user credentials forced to admin123");
+    console.log("Admin 1 promoted");
+  } else {
+    console.log("Admin 1 ready");
   }
 
-  const admin2Phone = "77606149";
-  const hashedPassword2 = await hashPassword("aabb11##");
-  const [existingAdmin2] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, admin2Phone));
+  const [existingAdmin2] = await db.select().from(schema.users).where(eq(schema.users.phoneNumber, "77606149"));
   
   if (!existingAdmin2) {
+    const hashedPassword2 = await hashPassword("aabb11##");
     await db.insert(schema.users).values({
-      phoneNumber: admin2Phone,
+      phoneNumber: "77606149",
       password: hashedPassword2,
       firstName: "Admin",
       lastName: "Principal",
@@ -78,15 +73,13 @@ async function seedDatabase() {
       referralCode: "ADMIN02",
     });
     console.log("Admin 2 created: 77606149");
-  } else {
+  } else if (!existingAdmin2.isAdmin) {
     await db.update(schema.users)
-      .set({ 
-        password: hashedPassword2,
-        isAdmin: true,
-        country: "Burkina Faso"
-      })
+      .set({ isAdmin: true, country: "Burkina Faso" })
       .where(eq(schema.users.id, existingAdmin2.id));
-    console.log("Admin 2 credentials updated: 77606149");
+    console.log("Admin 2 promoted");
+  } else {
+    console.log("Admin 2 ready");
   }
 
   const existingProducts = await storage.getAllProducts();
