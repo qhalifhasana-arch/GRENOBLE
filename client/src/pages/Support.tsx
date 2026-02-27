@@ -1,20 +1,33 @@
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Send, MessageCircle, User, ArrowLeft, Shield } from "lucide-react";
+import { Send, MessageCircle, User, ArrowLeft, Shield, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Setting } from "@shared/schema";
 import { api } from "@shared/routes";
 
 export default function Support() {
-  const { data: settings } = useQuery<Setting[]>({
+  const { data: settings, isLoading } = useQuery<Setting[]>({
     queryKey: [api.settings.public.path],
+    staleTime: 5000,
   });
 
-  const tgChannel = settings?.find(s => s.key === 'telegram_channel')?.value || "#";
-  const tgGroup = settings?.find(s => s.key === 'telegram_group')?.value || "#";
-  const customerService = settings?.find(s => s.key === 'customer_service_link')?.value || "#";
+  const tgChannel = settings?.find(s => s.key === 'telegram_channel')?.value || "";
+  const tgGroup = settings?.find(s => s.key === 'telegram_group')?.value || "";
+  const customerService = settings?.find(s => s.key === 'customer_service_link')?.value || "";
+
+  const handleLinkClick = (url: string, label: string) => {
+    if (!url || url === "#") {
+      alert("Le lien " + label + " n'est pas encore configuré. Veuillez contacter l'administrateur.");
+      return;
+    }
+    let finalUrl = url.trim();
+    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://") && !finalUrl.startsWith("tg://")) {
+      finalUrl = "https://" + finalUrl;
+    }
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28" data-testid="support-page">
@@ -43,8 +56,12 @@ export default function Support() {
             <CardDescription className="text-sm">Choisissez votre moyen de contact</CardDescription>
           </CardHeader>
           <CardContent className="p-5 space-y-3">
-            <a href={tgChannel} target="_blank" rel="noopener noreferrer" className="block" data-testid="link-telegram-channel">
-              <div className="bg-sky-500 hover:bg-sky-600 text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm">
+            <button
+              onClick={() => handleLinkClick(tgChannel, "Canal Telegram")}
+              className="block w-full text-left"
+              data-testid="link-telegram-channel"
+            >
+              <div className={`${tgChannel ? 'bg-sky-500 hover:bg-sky-600' : 'bg-sky-300'} text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm`}>
                 <div className="bg-white/20 p-3 rounded-xl">
                   <Send className="w-6 h-6" />
                 </div>
@@ -53,10 +70,14 @@ export default function Support() {
                   <p className="text-lg font-extrabold">Canal Telegram</p>
                 </div>
               </div>
-            </a>
+            </button>
 
-            <a href={tgGroup} target="_blank" rel="noopener noreferrer" className="block" data-testid="link-telegram-group">
-              <div className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm">
+            <button
+              onClick={() => handleLinkClick(tgGroup, "Groupe de Discussion")}
+              className="block w-full text-left"
+              data-testid="link-telegram-group"
+            >
+              <div className={`${tgGroup ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-emerald-300'} text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm`}>
                 <div className="bg-white/20 p-3 rounded-xl">
                   <MessageCircle className="w-6 h-6" />
                 </div>
@@ -65,10 +86,14 @@ export default function Support() {
                   <p className="text-lg font-extrabold">Groupe de Discussion</p>
                 </div>
               </div>
-            </a>
+            </button>
 
-            <a href={customerService} target="_blank" rel="noopener noreferrer" className="block" data-testid="link-customer-service">
-              <div className="bg-green-700 hover:bg-green-800 text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm">
+            <button
+              onClick={() => handleLinkClick(customerService, "Service Client")}
+              className="block w-full text-left"
+              data-testid="link-customer-service"
+            >
+              <div className={`${customerService ? 'bg-green-700 hover:bg-green-800' : 'bg-green-400'} text-white rounded-xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] shadow-sm`}>
                 <div className="bg-white/20 p-3 rounded-xl">
                   <User className="w-6 h-6" />
                 </div>
@@ -77,7 +102,16 @@ export default function Support() {
                   <p className="text-lg font-extrabold">Service Client</p>
                 </div>
               </div>
-            </a>
+            </button>
+
+            {(!tgChannel && !tgGroup && !customerService) && !isLoading && (
+              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <p className="text-amber-700 text-sm font-medium">
+                  Les liens de contact seront bientôt disponibles.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
