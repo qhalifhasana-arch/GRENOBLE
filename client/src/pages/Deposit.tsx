@@ -91,19 +91,13 @@ export default function Deposit() {
     depositMutation.mutate(submittedValues);
   };
 
-  const openPaymentLink = () => {
-    if (!paymentLink) return;
+  const getPaymentUrl = () => {
+    if (!paymentLink) return "";
     let finalUrl = paymentLink.trim();
     if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
       finalUrl = "https://" + finalUrl;
     }
-    const link = document.createElement("a");
-    link.href = finalUrl;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return finalUrl;
   };
 
   if (step === 'payment') {
@@ -145,14 +139,16 @@ export default function Deposit() {
 
               <div className="space-y-3">
                 {paymentLink ? (
-                  <Button
-                    onClick={openPaymentLink}
-                    className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl shadow-md gap-2 transition-all active:scale-[0.98]"
+                  <a
+                    href={getPaymentUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full h-14 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-bold rounded-xl shadow-md transition-all active:scale-[0.98] text-center"
                     data-testid="button-open-payment"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Procéder au paiement
-                  </Button>
+                  </a>
                 ) : (
                   <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center">
                     <p className="text-sm font-bold text-red-700">Lien de paiement non configuré</p>
