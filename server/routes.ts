@@ -89,7 +89,7 @@ async function seedDatabase() {
     // For simplicity in this environment, we'll append/update.
     const productsData = [
       { name: "VIP 1", price: 3000, dailyRate: 450, duration: 60, totalReturn: 27000, vipLevel: 1, description: "Investissement Agricole Niveau 1" },
-      { name: "VIP 2", price: 6000, dailyRate: 950, duration: 60, totalReturn: 57000, vipLevel: 2, description: "Investissement Agricole Niveau 2" },
+      { name: "VIP 2", price: 8000, dailyRate: 1300, duration: 60, totalReturn: 78000, vipLevel: 2, description: "Investissement Agricole Niveau 2" },
       { name: "VIP 3", price: 15000, dailyRate: 1900, duration: 60, totalReturn: 140000, vipLevel: 3, description: "Investissement Agricole Niveau 3" },
       { name: "VIP 4", price: 20000, dailyRate: 2900, duration: 60, totalReturn: 174000, vipLevel: 4, description: "Investissement Agricole Niveau 4" },
       { name: "VIP 5", price: 30000, dailyRate: 3600, duration: 60, totalReturn: 216000, vipLevel: 5, description: "Investissement Agricole Niveau 5" },
