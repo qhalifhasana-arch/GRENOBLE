@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
 import { createServer } from "http";
+import path from "path";
+import fs from "fs";
 
 const app = express();
 const httpServer = createServer(app);
@@ -72,6 +73,13 @@ process.on("unhandledRejection", (reason) => {
     res.status(200).send("OK");
   });
 
+  if (process.env.NODE_ENV === "production") {
+    const distPath = path.resolve(__dirname, "public");
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    }
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
@@ -88,7 +96,12 @@ process.on("unhandledRejection", (reason) => {
   });
 
   if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
+    const distPath = path.resolve(__dirname, "public");
+    if (fs.existsSync(distPath)) {
+      app.use("/{*path}", (_req, res) => {
+        res.sendFile(path.resolve(distPath, "index.html"));
+      });
+    }
   } else {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
