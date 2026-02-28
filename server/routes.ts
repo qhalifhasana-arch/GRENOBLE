@@ -82,29 +82,30 @@ async function seedDatabase() {
     console.log("Admin 2 ready");
   }
 
-  const existingProducts = await storage.getAllProducts();
-  if (existingProducts.length === 0 || existingProducts.length < 10) {
-    // Delete existing products to refresh with new ones if needed, 
-    // but the instruction implies a definitive update. 
-    // For simplicity in this environment, we'll append/update.
-    const productsData = [
-      { name: "VIP 1", price: 3000, dailyRate: 450, duration: 60, totalReturn: 27000, vipLevel: 1, description: "Investissement Agricole Niveau 1" },
-      { name: "VIP 2", price: 8000, dailyRate: 1300, duration: 60, totalReturn: 78000, vipLevel: 2, description: "Investissement Agricole Niveau 2" },
-      { name: "VIP 3", price: 15000, dailyRate: 1900, duration: 60, totalReturn: 140000, vipLevel: 3, description: "Investissement Agricole Niveau 3" },
-      { name: "VIP 4", price: 20000, dailyRate: 2900, duration: 60, totalReturn: 174000, vipLevel: 4, description: "Investissement Agricole Niveau 4" },
-      { name: "VIP 5", price: 30000, dailyRate: 3600, duration: 60, totalReturn: 216000, vipLevel: 5, description: "Investissement Agricole Niveau 5" },
-      { name: "VIP 6", price: 40000, dailyRate: 4900, duration: 60, totalReturn: 294000, vipLevel: 6, description: "Investissement Agricole Niveau 6" },
-      { name: "VIP 7", price: 95000, dailyRate: 8900, duration: 60, totalReturn: 534000, vipLevel: 7, description: "Investissement Agricole Niveau 7" },
-      { name: "VIP 8", price: 150000, dailyRate: 19000, duration: 60, totalReturn: 1140000, vipLevel: 8, description: "Investissement Agricole Niveau 8" },
-      { name: "VIP 9", price: 250000, dailyRate: 25000, duration: 60, totalReturn: 1500000, vipLevel: 9, description: "Investissement Agricole Niveau 9" },
-      { name: "VIP 10", price: 300000, dailyRate: 39000, duration: 60, totalReturn: 2340000, vipLevel: 10, description: "Investissement Agricole Niveau 10" },
-    ];
-    
-    // Clear old products if any and insert new ones
-    await db.delete(productsTable);
-    await db.insert(productsTable).values(productsData);
-    console.log("VIP Products updated successfully");
+  const productsData = [
+    { name: "VIP 1", price: 3000, dailyRate: 450, duration: 60, totalReturn: 27000, vipLevel: 1, description: "Investissement Agricole Niveau 1" },
+    { name: "VIP 2", price: 8000, dailyRate: 1300, duration: 60, totalReturn: 78000, vipLevel: 2, description: "Investissement Agricole Niveau 2" },
+    { name: "VIP 3", price: 15000, dailyRate: 1900, duration: 60, totalReturn: 140000, vipLevel: 3, description: "Investissement Agricole Niveau 3" },
+    { name: "VIP 4", price: 20000, dailyRate: 2900, duration: 60, totalReturn: 174000, vipLevel: 4, description: "Investissement Agricole Niveau 4" },
+    { name: "VIP 5", price: 30000, dailyRate: 3600, duration: 60, totalReturn: 216000, vipLevel: 5, description: "Investissement Agricole Niveau 5" },
+    { name: "VIP 6", price: 40000, dailyRate: 4900, duration: 60, totalReturn: 294000, vipLevel: 6, description: "Investissement Agricole Niveau 6" },
+    { name: "VIP 7", price: 95000, dailyRate: 8900, duration: 60, totalReturn: 534000, vipLevel: 7, description: "Investissement Agricole Niveau 7" },
+    { name: "VIP 8", price: 150000, dailyRate: 19000, duration: 60, totalReturn: 1140000, vipLevel: 8, description: "Investissement Agricole Niveau 8" },
+    { name: "VIP 9", price: 250000, dailyRate: 25000, duration: 60, totalReturn: 1500000, vipLevel: 9, description: "Investissement Agricole Niveau 9" },
+    { name: "VIP 10", price: 300000, dailyRate: 39000, duration: 60, totalReturn: 2340000, vipLevel: 10, description: "Investissement Agricole Niveau 10" },
+  ];
+
+  for (const p of productsData) {
+    const [existing] = await db.select().from(productsTable).where(eq(productsTable.vipLevel, p.vipLevel));
+    if (existing) {
+      await db.update(productsTable)
+        .set({ price: p.price, dailyRate: p.dailyRate, totalReturn: p.totalReturn, name: p.name, description: p.description, duration: p.duration })
+        .where(eq(productsTable.vipLevel, p.vipLevel));
+    } else {
+      await db.insert(productsTable).values(p);
+    }
   }
+  console.log("VIP Products synced");
 }
 
 export async function registerRoutes(
