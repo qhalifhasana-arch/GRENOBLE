@@ -63,6 +63,13 @@ export const COUNTRIES: Country[] = [
     phonePrefix: "+243",
     paymentMethods: ["Airtel Money RDC", "MTN Mobile Money RDC", "Banque locale / transfert bancaire RDC"],
   },
+  {
+    name: "Cameroun",
+    flag: "🇨🇲",
+    code: "CM",
+    phonePrefix: "+237",
+    paymentMethods: ["MTN MoMo", "Orange Money"],
+  },
 ];
 
 export function getCountryByName(name: string): Country | undefined {
