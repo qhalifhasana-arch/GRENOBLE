@@ -68,15 +68,20 @@ process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Rejection:", reason);
 });
 
+const distPath = typeof __dirname !== "undefined"
+  ? path.resolve(__dirname, "public")
+  : path.resolve(process.cwd(), "dist", "public");
+const isProduction = fs.existsSync(distPath) && fs.existsSync(path.resolve(distPath, "index.html"));
+
 app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-if (process.env.NODE_ENV === "production") {
-  const distPath = path.resolve(__dirname, "public");
-  if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
-  }
+if (isProduction) {
+  app.use(express.static(distPath));
+  app.get("/", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
 }
 
 const port = parseInt(process.env.PORT || "5000", 10);
@@ -107,13 +112,10 @@ httpServer.listen(
     return res.status(status).json({ message });
   });
 
-  if (process.env.NODE_ENV === "production") {
-    const distPath = path.resolve(__dirname, "public");
-    if (fs.existsSync(distPath)) {
-      app.use("/{*path}", (_req, res) => {
-        res.sendFile(path.resolve(distPath, "index.html"));
-      });
-    }
+  if (isProduction) {
+    app.use("/{*path}", (_req, res) => {
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
   } else {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
