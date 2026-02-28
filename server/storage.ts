@@ -252,6 +252,19 @@ export class DatabaseStorage implements IStorage {
       const [referrer] = await db.select().from(users).where(eq(users.id, referrerId));
       if (!referrer) break;
 
+      const [hasDeposit] = await db.select().from(transactions)
+        .where(and(
+          eq(transactions.userId, referrer.id),
+          eq(transactions.type, "deposit"),
+          eq(transactions.status, "completed")
+        ));
+
+      if (!hasDeposit) {
+        console.log(`Commission L${level}: SKIPPED for user ${referrer.id} (${referrer.firstName}) - no deposit`);
+        currentUserId = referrerId;
+        continue;
+      }
+
       const commission = Math.floor(purchaseAmount * rate);
       if (commission <= 0) {
         currentUserId = referrerId;
