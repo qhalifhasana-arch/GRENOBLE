@@ -92,7 +92,18 @@ export default function Deposit() {
   };
 
   const openPaymentLink = () => {
-    if (paymentLink) window.open(paymentLink, '_blank');
+    if (!paymentLink) return;
+    let finalUrl = paymentLink.trim();
+    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+      finalUrl = "https://" + finalUrl;
+    }
+    const link = document.createElement("a");
+    link.href = finalUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (step === 'payment') {
