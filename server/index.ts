@@ -68,18 +68,30 @@ process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Rejection:", reason);
 });
 
-(async () => {
-  app.get("/health", (_req, res) => {
-    res.status(200).send("OK");
-  });
+app.get("/health", (_req, res) => {
+  res.status(200).send("OK");
+});
 
-  if (process.env.NODE_ENV === "production") {
-    const distPath = path.resolve(__dirname, "public");
-    if (fs.existsSync(distPath)) {
-      app.use(express.static(distPath));
-    }
+if (process.env.NODE_ENV === "production") {
+  const distPath = path.resolve(__dirname, "public");
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
   }
+}
 
+const port = parseInt(process.env.PORT || "5000", 10);
+httpServer.listen(
+  {
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  },
+  () => {
+    log(`serving on port ${port}`);
+  },
+);
+
+(async () => {
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
@@ -106,16 +118,4 @@ process.on("unhandledRejection", (reason) => {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
   }
-
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
 })();
