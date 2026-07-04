@@ -70,6 +70,20 @@ export const COUNTRIES: Country[] = [
     phonePrefix: "+237",
     paymentMethods: ["MTN MoMo", "Orange Money"],
   },
+  {
+    name: "Tchad",
+    flag: "🇹🇩",
+    code: "TD",
+    phonePrefix: "+235",
+    paymentMethods: ["Airtel Money", "Moov Money"],
+  },
+  {
+    name: "Niger",
+    flag: "🇳🇪",
+    code: "NE",
+    phonePrefix: "+227",
+    paymentMethods: ["Airtel Money", "Moov Money"],
+  },
 ];
 
 export function getCountryByName(name: string): Country | undefined {
