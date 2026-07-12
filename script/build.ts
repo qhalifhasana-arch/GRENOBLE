@@ -38,6 +38,13 @@ async function buildAll() {
   console.log("building client...");
   await viteBuild();
 
+  // Sur Vercel, le serveur est géré par api/index.ts (serverless)
+  // On n'a besoin que du build client
+  if (process.env.VERCEL) {
+    console.log("Vercel environment detected — skipping server build.");
+    return;
+  }
+
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
   const allDeps = [
