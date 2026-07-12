@@ -79,6 +79,87 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     next();
   });
 
+  // ─── DEBUG ENDPOINT ───────────────────────────────────────────────────────
+  app.get("/api/debug", async (_req, res) => {
+    const results: Record<string, any> = {
+      timestamp: new Date().toISOString(),
+      node_version: process.version,
+      env: {
+        NODE_ENV: process.env.NODE_ENV || "❌ non défini",
+        DATABASE_URL: process.env.DATABASE_URL
+          ? "✅ défini (" + process.env.DATABASE_URL.replace(/:([^@]+)@/, ":****@") + ")"
+          : "❌ MANQUANT",
+        SESSION_SECRET: process.env.SESSION_SECRET ? "✅ défini" : "❌ MANQUANT",
+      },
+      database: { status: "⏳ test en cours..." },
+      tables: {},
+      session_store: { status: "⏳ test en cours..." },
+    };
+
+    // Test connexion DB
+    try {
+      const { pool: dbPool } = await import("./db");
+      const client = await dbPool.connect();
+      const result = await client.query("SELECT NOW() as time, version() as version");
+      results.database = {
+        status: "✅ connecté",
+        time: result.rows[0].time,
+        version: result.rows[0].version.split(" ").slice(0, 2).join(" "),
+      };
+
+      // Test tables
+      const tables = ["users", "products", "transactions", "investments", "settings", "user_sessions"];
+      for (const table of tables) {
+        try {
+          const r = await client.query(`SELECT COUNT(*) as count FROM public.${table}`);
+          results.tables[table] = `✅ ${r.rows[0].count} lignes`;
+        } catch (e: any) {
+          results.tables[table] = `❌ ${e.message}`;
+        }
+      }
+
+      // Test insert session
+      try {
+        await client.query(
+          `INSERT INTO public.user_sessions (sid, sess, expire) VALUES ($1, $2, $3) ON CONFLICT (sid) DO NOTHING`,
+          ["debug-test", JSON.stringify({ test: true }), new Date(Date.now() + 60000)]
+        );
+        await client.query(`DELETE FROM public.user_sessions WHERE sid = 'debug-test'`);
+        results.session_store = { status: "✅ lecture/écriture OK" };
+      } catch (e: any) {
+        results.session_store = { status: `❌ ${e.message}` };
+      }
+
+      client.release();
+    } catch (e: any) {
+      results.database = { status: `❌ ${e.message}` };
+      results.session_store = { status: "❌ impossible (DB non connectée)" };
+    }
+
+    // Test hachage mot de passe
+    try {
+      const { hashPassword } = await import("./auth");
+      const hash = await hashPassword("test123");
+      results.password_hashing = hash.includes(".") ? "✅ fonctionne" : "❌ format invalide";
+    } catch (e: any) {
+      results.password_hashing = `❌ ${e.message}`;
+    }
+
+    // Résumé
+    const allOk =
+      results.database.status?.startsWith("✅") &&
+      results.session_store.status?.startsWith("✅") &&
+      results.env.DATABASE_URL?.startsWith("✅") &&
+      results.env.SESSION_SECRET?.startsWith("✅");
+
+    results.summary = allOk
+      ? "✅ Tout est opérationnel — connexion et inscription devraient fonctionner"
+      : "❌ Des problèmes détectés — voir les détails ci-dessus";
+
+    res.json(results);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
   setupAuth(app);
   seedDatabase().catch(console.error);
 
