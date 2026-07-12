@@ -1,8 +1,8 @@
-# GreenHarvest Investment Platform
+# GREENIX Investment Platform
 
 ## Overview
 
-GreenHarvest is a mobile-first investment platform built for the West African market (FCFA currency). It enables users to invest in agricultural products, earn daily returns, and grow their network through a referral system. The application features a complete user dashboard, product catalog, deposit/withdrawal flows, team management, and a comprehensive admin panel.
+GREENIX is a mobile-first investment platform built for the West African market (FCFA currency). It enables users to invest in agricultural products, earn daily returns, and grow their network through a referral system. The application features a complete user dashboard, product catalog, deposit/withdrawal flows, team management, and a comprehensive admin panel.
 
 ## User Preferences
 

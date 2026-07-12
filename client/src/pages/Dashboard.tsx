@@ -31,7 +31,7 @@ export default function Dashboard() {
       <div className="relative px-6 pt-12 pb-20 overflow-hidden">
         <img
           src={agricultureHero}
-          alt="Champs agricoles GreenHarvest"
+          alt="Champs agricoles GREENIX"
           className="absolute inset-0 w-full h-full object-cover"
           data-testid="img-agriculture-hero"
         />

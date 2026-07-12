@@ -251,7 +251,7 @@ export default function Admin() {
               <span className="text-slate-400 text-xs font-mono">ID: {currentUser?.id}</span>
             </div>
             <h1 className="text-3xl font-black tracking-tight">Panneau de Contrôle</h1>
-            <p className="text-slate-400 text-sm">Gestion globale de GreenHarvest Agriculture</p>
+            <p className="text-slate-400 text-sm">Gestion globale de GREENIX Agriculture</p>
           </div>
           <Link href="/dashboard">
             <Button variant="outline" className="bg-transparent border-slate-700 text-white hover:bg-slate-800 rounded-2xl gap-2">

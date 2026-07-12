@@ -55,7 +55,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/15 backdrop-blur-md rounded-2xl border border-white/25 mb-3 shadow-lg">
             <span className="text-3xl">🌱</span>
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-lg">GreenHarvest</h1>
+          <h1 className="text-4xl font-black text-white tracking-tight drop-shadow-lg">GREENIX</h1>
           <p className="text-green-200/90 text-base font-medium mt-1 drop-shadow">Investissement Agricole Durable</p>
         </div>
       </div>

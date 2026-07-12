@@ -19,8 +19,8 @@ export default function Team() {
   const shareLink = () => {
     if (stats?.referralLink && navigator.share) {
       navigator.share({
-        title: "GreenHarvest - Investissement Agricole",
-        text: `Rejoignez GreenHarvest et recevez 700 FCFA de bonus ! Utilisez mon lien :`,
+        title: "GREENIX - Investissement Agricole",
+        text: `Rejoignez GREENIX et recevez 700 FCFA de bonus ! Utilisez mon lien :`,
         url: stats.referralLink,
       }).catch(() => {});
     } else {
