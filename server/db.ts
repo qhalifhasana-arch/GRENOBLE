@@ -4,23 +4,22 @@ import * as schema from "@shared/schema";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  // Ne pas throw au niveau module — sinon la fonction Vercel crashe silencieusement
+  console.error("CRITICAL: DATABASE_URL is not set! All DB operations will fail.");
 }
 
-// Sur Vercel/production, on a besoin de SSL pour Supabase
-// On utilise le Session Pooler (port 5432) qui supporte les prepared statements
-const connectionString = process.env.DATABASE_URL;
 const isProduction = process.env.NODE_ENV === "production";
 
 export const pool = new Pool({
-  connectionString,
+  // Si DATABASE_URL manquant, on crée un pool invalide (échec à la connexion, pas au chargement)
+  connectionString: connectionString || "postgresql://localhost:5432/missing",
   ssl: isProduction ? { rejectUnauthorized: false } : false,
-  max: 3, // Limite les connexions pour serverless
+  max: 3,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  connectionTimeoutMillis: 5000,
 });
 
 export const db = drizzle(pool, { schema });
