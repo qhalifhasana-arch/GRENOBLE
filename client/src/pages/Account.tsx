@@ -6,8 +6,9 @@ import {
   LogOut, Shield, User, Settings, CreditCard, ChevronRight,
   Sprout, Loader2, Wallet, Phone,
   MapPin, Lock, Landmark, Bell, MessageCircle,
-  Clock, CalendarCheck, CalendarClock, Hourglass, TrendingUp, CircleDollarSign
+  Clock, CalendarCheck, CalendarClock, Hourglass, TrendingUp, CircleDollarSign, ChevronDown
 } from "lucide-react";
+import farmWorkersImg from "@/assets/images/farm-workers.png";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ export default function Account() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [showProducts, setShowProducts] = useState(false);
   const [paymentPhone, setPaymentPhone] = useState(user?.paymentPhone || "");
   const [paymentMethod, setPaymentMethod] = useState(user?.paymentMethod || "");
   const [paymentName, setPaymentName] = useState(user?.paymentName || "");
@@ -76,7 +78,7 @@ export default function Account() {
     switch (activeTab) {
       case "profile":
         return (
-          <div className="space-y-5 pt-5 px-6 max-w-2xl mx-auto">
+          <div className="space-y-5 pt-5 px-6 max-w-2xl mx-auto pt-10">
             <div className="flex items-center gap-4 mb-6">
               <Avatar className="w-16 h-16 border-2 border-primary/20">
                 <AvatarFallback className="bg-primary text-white text-xl font-bold">
@@ -254,36 +256,49 @@ export default function Account() {
       default:
         return (
           <div className="pb-8" data-testid="account-main">
-            <div className="bg-white px-6 pt-12 pb-6 border-b border-gray-100 mb-2">
-              <div className="max-w-2xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h1 className="text-2xl font-extrabold text-gray-900">Mon Compte</h1>
-                  <button
-                    onClick={() => logout.mutate()}
-                    className="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition-colors"
-                    data-testid="button-logout"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    <span className="text-xs font-bold">Quitter</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-4 mb-6">
-                  <Avatar className="w-16 h-16 border-2 border-primary/20">
-                    <AvatarFallback className="bg-primary text-white text-xl font-extrabold">
-                      {user?.firstName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-lg font-extrabold text-gray-900 leading-tight">{user?.firstName} {user?.lastName}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-lg">{countryFlag}</span>
-                      <span className="text-sm text-gray-400 font-medium">{user?.phoneNumber}</span>
+            {/* Hero photo */}
+            <div className="relative overflow-hidden rounded-b-[2rem] mb-2">
+              <img
+                src={farmWorkersImg}
+                alt="Travailleurs agricoles"
+                className="w-full h-52 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-green-950/40 via-green-900/50 to-green-950/90" />
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => logout.mutate()}
+                  className="flex flex-col items-center gap-1 text-white/80 hover:text-red-300 transition-colors"
+                  data-testid="button-logout"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-xs font-bold">Quitter</span>
+                </button>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 px-6 pb-5">
+                <div className="max-w-2xl mx-auto">
+                  <h1 className="text-xl font-extrabold text-white mb-3">Mon Compte</h1>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="w-14 h-14 border-2 border-white/40">
+                      <AvatarFallback className="bg-primary text-white text-xl font-extrabold">
+                        {user?.firstName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-base font-extrabold text-white leading-tight">{user?.firstName} {user?.lastName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-base">{countryFlag}</span>
+                        <span className="text-sm text-green-200/80 font-medium">{user?.phoneNumber}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-100 pt-5">
+            {/* Solde & Revenus */}
+            <div className="bg-white border-b border-gray-100 mb-2">
+              <div className="max-w-2xl mx-auto px-6 py-4">
+                <div className="grid grid-cols-2 divide-x divide-gray-100">
                   <div className="text-center px-3">
                     <p className="text-xl font-extrabold text-primary mb-1" data-testid="text-account-balance">{user?.balance?.toLocaleString()} F</p>
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Solde</p>
@@ -344,11 +359,6 @@ export default function Account() {
               </div>
 
               <div className="px-6 mt-6 space-y-3">
-                <h3 className="font-extrabold text-base text-gray-800 flex items-center gap-2 px-1">
-                  <Sprout className="w-5 h-5 text-primary" />
-                  Mes Produits VIP
-                </h3>
-
                 {loadingInvestments ? (
                   <div className="p-8 flex justify-center">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -367,11 +377,32 @@ export default function Account() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-4">
-                    {investments?.map((inv) => (
-                      <InvestmentDetailCard key={inv.id} investment={inv} />
-                    ))}
-                  </div>
+                  <>
+                    <button
+                      onClick={() => setShowProducts(!showProducts)}
+                      className="w-full flex items-center justify-between bg-white border border-gray-100 rounded-2xl px-5 py-4 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all"
+                      data-testid="button-toggle-products"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 p-2.5 rounded-xl">
+                          <Sprout className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-extrabold text-base text-gray-800">Mes Produits VIP</p>
+                          <p className="text-xs text-gray-400 font-medium">{investments?.length} produit{(investments?.length || 0) > 1 ? "s" : ""} actif{(investments?.length || 0) > 1 ? "s" : ""}</p>
+                        </div>
+                      </div>
+                      <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform duration-200", showProducts && "rotate-180")} />
+                    </button>
+
+                    {showProducts && (
+                      <div className="space-y-4">
+                        {investments?.map((inv) => (
+                          <InvestmentDetailCard key={inv.id} investment={inv} />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
