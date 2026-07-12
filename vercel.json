@@ -2,7 +2,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm install --include=dev",
-  "buildCommand": "npx vite build && npx esbuild server/vercel.ts --bundle --platform=node --target=node18 --format=cjs --outfile=api/index.js --alias:@shared=./shared --external:pg-native --external:@mapbox/node-pre-gyp --external:bcrypt",
+  "buildCommand": "npx vite build && mkdir -p api && npx esbuild server/vercel.ts --bundle --platform=node --target=node18 --format=cjs --outfile=api/index.js --alias:@shared=./shared --external:pg-native --external:@mapbox/node-pre-gyp --external:bcrypt",
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/index" },
