@@ -10,6 +10,9 @@ import { registerRoutes } from "../server/routes";
 const app = express();
 const httpServer = createServer(app);
 
+// Needed for cookies behind Vercel's proxy
+app.set("trust proxy", 1);
+
 // Extend IncomingMessage for rawBody (needed by some middleware)
 declare module "http" {
   interface IncomingMessage {
@@ -30,10 +33,12 @@ app.use(express.urlencoded({ extended: false }));
 const ready = registerRoutes(httpServer, app).then(() => {
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) return next(err);
-    res.status(err.status || err.statusCode || 500).json({
-      message: err.message || "Internal Server Error",
-    });
+    const status = err.status || err.statusCode || 500;
+    console.error("API Error:", err.message);
+    res.status(status).json({ message: err.message || "Internal Server Error" });
   });
+}).catch((err) => {
+  console.error("Fatal boot error:", err);
 });
 
 // Vercel calls this for every request
