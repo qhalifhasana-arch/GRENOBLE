@@ -6,7 +6,7 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { type User as SchemaUser } from "@shared/schema";
 import { hashPassword } from "./auth";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { products as productsTable } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
@@ -98,7 +98,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
     // Test connexion DB
     try {
-      const { pool: dbPool } = await import("./db");
+      const dbPool = pool;
       const client = await dbPool.connect();
       const result = await client.query("SELECT NOW() as time, version() as version");
       results.database = {
@@ -138,7 +138,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
     // Test hachage mot de passe
     try {
-      const { hashPassword } = await import("./auth");
+      // hashPassword déjà importé statiquement en haut
       const hash = await hashPassword("test123");
       results.password_hashing = hash.includes(".") ? "✅ fonctionne" : "❌ format invalide";
     } catch (e: any) {
