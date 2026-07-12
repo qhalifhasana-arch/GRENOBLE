@@ -108,7 +108,7 @@ export function setupAuth(app: Express) {
         ...req.body,
         password: hashedPassword,
         referrerId,
-        balance: 700,
+        balance: 0,
       });
 
       req.login(user, (err) => {

@@ -124,10 +124,6 @@ export default function Register() {
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-lg">GREENIX</h1>
           <p className="text-green-200/90 text-xs sm:text-sm font-medium mt-1">Investissement Agricole Durable</p>
-          <div className="inline-flex items-center gap-1.5 bg-amber-500/25 border border-amber-400/30 text-amber-200 px-3 py-1.5 rounded-full text-xs font-bold mt-2">
-            <Gift className="w-3.5 h-3.5" />
-            Bonus d'inscription : 700 FCFA
-          </div>
         </div>
       </div>
 
