@@ -43,7 +43,37 @@ export default function Deposit() {
     queryKey: [api.settings.public.path],
   });
 
-  const paymentLink = settings?.find(s => s.key === 'payment_link')?.value || '';
+  const getCountryCode = (countryName: string) => {
+    const map: Record<string, string> = { "Tchad": "TD", "Niger": "NE" };
+    return map[countryName] || "";
+  };
+
+  const getPaymentLinkForCountry = (countryName: string) => {
+    const code = getCountryCode(countryName);
+    if (code) {
+      const countryLink = settings?.find(s => s.key === `payment_link_${code}`)?.value;
+      if (countryLink) return countryLink;
+    }
+    return settings?.find(s => s.key === 'payment_link')?.value || '';
+  };
+
+  const getPaymentNumberForCountry = (countryName: string) => {
+    const code = getCountryCode(countryName);
+    if (code) {
+      return settings?.find(s => s.key === `payment_number_${code}`)?.value || '';
+    }
+    return '';
+  };
+
+  const getPaymentNameForCountry = (countryName: string) => {
+    const code = getCountryCode(countryName);
+    if (code) {
+      return settings?.find(s => s.key === `payment_name_${code}`)?.value || '';
+    }
+    return '';
+  };
+
+  const paymentLink = getPaymentLinkForCountry(user?.country || '');
 
   const depositMutation = useMutation({
     mutationFn: async (data: any) => {

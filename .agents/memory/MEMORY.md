@@ -1,0 +1,3 @@
+- [DB column naming](db-column-naming.md) — Drizzle uses snake_case in PostgreSQL; always use snake_case when adding columns directly via SQL (not camelCase with quotes).
+- [Admin panel architecture](admin-panel-arch.md) — Admin split into 7 sub-pages under client/src/pages/admin/; shell in Admin.tsx with dark sidebar.
+- [Per-country payment settings](payment-settings.md) — Settings keys: payment_link_TD, payment_link_NE, payment_number_TD, payment_number_NE, payment_name_TD, payment_name_NE.
