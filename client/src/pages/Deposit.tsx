@@ -19,7 +19,7 @@ import { Setting } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { COUNTRIES, getPaymentMethodsForCountry, getFlagForCountry, type Country } from "@/lib/countries";
-import depositBg from "@/assets/images/deposit-farming.png";
+import depositBg from "@/assets/images/deposit-farming.webp";
 
 const AMOUNTS = [3000, 5000, 10000, 20000, 50000, 100000];
 

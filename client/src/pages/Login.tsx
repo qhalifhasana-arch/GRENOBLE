@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
 import { cn } from "@/lib/utils";
-import heroAgricultureImg from "@/assets/images/hero-agriculture.jpg";
+import heroAgricultureImg from "@/assets/images/hero-agriculture.webp";
 
 const loginSchema = z.object({
   phoneNumber: z.string().min(1, "Le numéro de téléphone est requis"),

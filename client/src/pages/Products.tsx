@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Loader2, TrendingUp, Clock, Zap, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import vip1Img from "@/assets/images/vip-1.png";
-import vip2Img from "@/assets/images/vip-2.png";
-import vip3Img from "@/assets/images/vip-3.png";
-import vip4Img from "@/assets/images/vip-4.png";
-import vip5Img from "@/assets/images/vip-5.png";
-import vip6Img from "@/assets/images/vip-6.png";
-import vip7Img from "@/assets/images/vip-7.png";
-import vip8Img from "@/assets/images/vip-8.png";
-import vip9Img from "@/assets/images/vip-9.png";
-import vip10Img from "@/assets/images/vip-10.png";
-import farmWorkers from "@/assets/images/farm-workers.png";
+import vip1Img from "@/assets/images/vip-1.webp";
+import vip2Img from "@/assets/images/vip-2.webp";
+import vip3Img from "@/assets/images/vip-3.webp";
+import vip4Img from "@/assets/images/vip-4.webp";
+import vip5Img from "@/assets/images/vip-5.webp";
+import vip6Img from "@/assets/images/vip-6.webp";
+import vip7Img from "@/assets/images/vip-7.webp";
+import vip8Img from "@/assets/images/vip-8.webp";
+import vip9Img from "@/assets/images/vip-9.webp";
+import vip10Img from "@/assets/images/vip-10.webp";
+import farmWorkers from "@/assets/images/farm-workers.webp";
 
 const VIP_IMAGES: Record<number, string> = {
   1: vip1Img,

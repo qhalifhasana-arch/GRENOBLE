@@ -8,8 +8,8 @@ import { Investment, Product, Setting } from "@shared/schema";
 import { api } from "@shared/routes";
 import { Card, CardContent } from "@/components/ui/card";
 import { getFlagForCountry } from "@/lib/countries";
-import seedlingImg from "@/assets/images/seedling-hands.jpg";
-import agricultureHero from "@/assets/images/agriculture-hero.png";
+import seedlingImg from "@/assets/images/seedling-hands.webp";
+import agricultureHero from "@/assets/images/agriculture-hero.webp";
 
 export default function Dashboard() {
   const { user } = useAuth();

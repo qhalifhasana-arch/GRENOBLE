@@ -19,7 +19,7 @@ import {
 import { format } from "date-fns";
 import { Transaction } from "@shared/schema";
 import { COUNTRIES, getPaymentMethodsForCountry, type Country } from "@/lib/countries";
-import withdrawBg from "@/assets/images/withdraw-harvest.png";
+import withdrawBg from "@/assets/images/withdraw-harvest.webp";
 import { cn } from "@/lib/utils";
 
 const withdrawSchema = z.object({

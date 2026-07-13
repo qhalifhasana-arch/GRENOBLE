@@ -5,7 +5,7 @@ import { Loader2, Phone, KeyRound, UserCircle, ChevronRight, ArrowLeft, Gift, Ey
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, type Country } from "@/lib/countries";
-import heroAgricultureImg from "@/assets/images/hero-agriculture.jpg";
+import heroAgricultureImg from "@/assets/images/hero-agriculture.webp";
 
 export default function Register() {
   const { toast } = useToast();

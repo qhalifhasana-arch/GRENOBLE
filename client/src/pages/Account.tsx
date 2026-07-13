@@ -8,7 +8,7 @@ import {
   MapPin, Lock, Landmark, Bell, MessageCircle,
   Clock, CalendarCheck, CalendarClock, Hourglass, TrendingUp, CircleDollarSign, ChevronDown
 } from "lucide-react";
-import farmWorkersImg from "@/assets/images/farm-workers.png";
+import farmWorkersImg from "@/assets/images/farm-workers.webp";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
